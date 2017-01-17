@@ -1,0 +1,2396 @@
+mainmenu "coreboot configuration"
+menu "General setup"
+config LOCALVERSION
+	string "Local version string"
+config CBFS_PREFIX
+	string "CBFS prefix to use"
+	default "fallback"
+config COMMON_CBFS_SPI_WRAPPER
+	bool
+	default n
+	depends on SPI_FLASH
+	depends on !ARCH_X86
+config MULTIPLE_CBFS_INSTANCES
+	bool "Multiple CBFS instances in the bootrom"
+	default n
+
+config COMPILER_GCC
+	bool
+	default y
+
+config ANY_TOOLCHAIN
+	bool
+	default n
+config CCACHE
+	bool "Use ccache to speed up (re)compilation"
+	default n
+config FMD_GENPARSER
+	bool "Generate flashmap descriptor parser using flex and bison"
+	default n
+config SCONFIG_GENPARSER
+	bool "Generate SCONFIG parser using flex and bison"
+	default n
+config USE_OPTION_TABLE
+	bool "Use CMOS for configuration values"
+	default n
+	depends on HAVE_OPTION_TABLE
+config STATIC_OPTION_TABLE
+	bool "Load default configuration values into CMOS on each boot"
+	default n
+	depends on USE_OPTION_TABLE
+config UNCOMPRESSED_RAMSTAGE
+	bool
+	default n
+config COMPRESS_RAMSTAGE
+	bool "Compress ramstage with LZMA"
+	default y if !UNCOMPRESSED_RAMSTAGE
+	default n
+config COMPRESS_PRERAM_STAGES
+	bool "Compress romstage and verstage with LZ4"
+	depends on !ARCH_X86
+	default y
+config INCLUDE_CONFIG_FILE
+	bool "Include the coreboot .config file into the ROM image"
+	default y
+config EARLY_CBMEM_INIT
+	bool
+	default y
+config COLLECT_TIMESTAMPS
+	bool
+	default n
+config USE_BLOBS
+	bool "Allow use of binary-only repository"
+	default n
+config COVERAGE
+	bool "Code coverage support"
+	depends on COMPILER_GCC
+	default n
+config RELOCATABLE_MODULES
+	bool
+	default n
+config RELOCATABLE_RAMSTAGE
+	depends on EARLY_CBMEM_INIT
+	bool "Build the ramstage to be relocatable in 32-bit address space."
+	default n
+	select RELOCATABLE_MODULES
+config CACHE_RELOCATED_RAMSTAGE_OUTSIDE_CBMEM
+	depends on RELOCATABLE_RAMSTAGE
+	bool
+	default n
+config FLASHMAP_OFFSET
+	hex "Flash Map Offset"
+	default 0x00670000 if NORTHBRIDGE_INTEL_SANDYBRIDGE
+	default 0x00610000 if NORTHBRIDGE_INTEL_IVYBRIDGE
+	default 0
+choice
+	prompt "Bootblock behaviour"
+	default BOOTBLOCK_SIMPLE
+config BOOTBLOCK_SIMPLE
+	bool "Always load fallback"
+config BOOTBLOCK_NORMAL
+	bool "Switch to normal if CMOS says so"
+endchoice
+config BOOTBLOCK_CUSTOM
+	bool
+	default n
+config BOOTBLOCK_SOURCE
+	string
+	default "bootblock_simple.c" if BOOTBLOCK_SIMPLE
+	default "bootblock_normal.c" if BOOTBLOCK_NORMAL
+config C_ENVIRONMENT_BOOTBLOCK
+	bool
+	default n
+config SKIP_MAX_REBOOT_CNT_CLEAR
+	bool "Do not clear reboot count after successful boot"
+	default n
+	depends on BOOTBLOCK_NORMAL
+config UPDATE_IMAGE
+	bool "Update existing coreboot.rom image"
+	default n
+config GENERIC_GPIO_LIB
+	bool
+	default n
+config BOARD_ID_AUTO
+	bool
+	default n
+config BOARD_ID_MANUAL
+	bool
+	default n
+	depends on !BOARD_ID_AUTO
+config BOARD_ID_STRING
+	string "Board ID"
+	default "(none)"
+	depends on BOARD_ID_MANUAL
+config RAM_CODE_SUPPORT
+	bool
+	default n
+config BOOTSPLASH_IMAGE
+	bool
+	default n
+config BOOTSPLASH_FILE
+	string "Bootsplash path and filename"
+	depends on BOOTSPLASH_IMAGE
+	default "bootsplash.jpg"
+endmenu
+config ACPI_SATA_GENERATOR
+	bool
+	default n
+menu "Mainboard"
+
+config VENDOR_EMULATION
+	bool
+	default y
+
+
+
+config BOARD_EMULATION_QEMU_X86_Q35
+	bool
+	default y
+
+config BOARD_EMULATION_QEMU_X86
+	bool
+	default y
+	depends on BOARD_EMULATION_QEMU_X86_Q35
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+	select CPU_QEMU_X86
+	select SOUTHBRIDGE_INTEL_I82801IX
+	select IOAPIC_INTERRUPTS_ON_APIC_SERIAL_BUS
+	select MMCONF_SUPPORT
+	select MMCONF_SUPPORT_DEFAULT
+	select HAVE_ACPI_TABLES
+	select BOARD_ROMSIZE_KB_256
+	select MAINBOARD_HAS_NATIVE_VGA_INIT
+	select MAINBOARD_DO_NATIVE_VGA_INIT
+	select MAINBOARD_HAS_NATIVE_VGA_INIT_TEXTMODECFG
+config MAINBOARD_DIR
+	string
+	default emulation/qemu-q35
+config MAINBOARD_PART_NUMBER
+	string
+	default "QEMU x86 q35/ich9"
+config BOOTBLOCK_MAINBOARD_INIT
+	string
+	default "mainboard/emulation/qemu-q35/bootblock.c"
+config MMCONF_BASE_ADDRESS
+	hex
+	default 0xb0000000
+config DCACHE_RAM_BASE
+	hex
+	default 0xd0000
+config DCACHE_RAM_SIZE
+	hex
+	default 0x10000
+config MAINBOARD_VENDOR
+	string
+	default "Emulation"
+
+config BOARD_ROMSIZE_KB_256
+	bool
+
+choice
+config COREBOOT_ROMSIZE_KB_256
+	bool "256 KB"
+endchoice
+
+config COREBOOT_ROMSIZE_KB
+	int
+	default 256 if COREBOOT_ROMSIZE_KB_256
+config ROM_SIZE
+	hex
+	default 0x40000 if COREBOOT_ROMSIZE_KB_256
+config ENABLE_POWER_BUTTON
+	bool "Enable the power button" if POWER_BUTTON_IS_OPTIONAL
+	default y if POWER_BUTTON_DEFAULT_ENABLE
+	default n if POWER_BUTTON_DEFAULT_DISABLE
+config ENABLE_POWER_BUTTON
+	def_bool y if !POWER_BUTTON_IS_OPTIONAL && POWER_BUTTON_FORCE_ENABLE
+	def_bool n if !POWER_BUTTON_IS_OPTIONAL && POWER_BUTTON_FORCE_DISABLE
+config CBFS_SIZE
+	hex "Size of CBFS filesystem in ROM"
+config FMDFILE
+	string "fmap description file in fmd format"
+	default ""
+endmenu
+config SYSTEM_TYPE_LAPTOP
+	default n
+	bool
+config CBFS_AUTOGEN_ATTRIBUTES
+	default n
+	bool
+menu "Chipset"
+comment "SoC"
+config CPU_SAMSUNG_EXYNOS5420
+	bool
+	default n
+config CPU_SAMSUNG_EXYNOS5250
+	bool
+	default n
+config SOC_INTEL_APOLLOLAKE
+	bool
+config SOC_INTEL_FSP_BAYTRAIL
+	bool
+config SOC_INTEL_BAYTRAIL
+	bool
+config SOC_INTEL_SKYLAKE
+	bool
+config SOC_INTEL_QUARK
+	bool
+config SOC_INTEL_BRASWELL
+	bool
+config SOC_INTEL_COMMON
+	bool
+config SOC_INTEL_FSP_BROADWELL_DE
+	bool
+config SOC_INTEL_BROADWELL
+	bool
+config SOC_ROCKCHIP_RK3288
+	bool
+	default n
+config SOC_ROCKCHIP_RK3399
+	bool
+	default n
+config CPU_IMGTEC_PISTACHIO
+	bool
+
+config SOC_UCB_RISCV
+	bool
+	default n
+
+config SOC_MEDIATEK_MT8173
+	bool
+	default n
+config SOC_BROADCOM_CYGNUS
+	bool
+	default n
+config SOC_MARVELL_BG4CD
+	bool
+	default n
+config SOC_MARVELL_ARMADA38X
+	bool
+	default n
+config SOC_NVIDIA_TEGRA210
+	bool
+	default n
+config SOC_NVIDIA_TEGRA124
+	bool
+	default n
+config SOC_NVIDIA_TEGRA132
+	bool
+	default n
+config SOC_QC_IPQ806X
+	bool
+	default n
+comment "CPU"
+config CPU_AMD_SOCKET_754
+	bool
+config CPU_AMD_SOCKET_939
+	bool
+config CPU_AMD_SOCKET_940
+	bool
+config CPU_AMD_SOCKET_AM2
+	bool
+config CPU_SOCKET_TYPE
+	hex
+	default 0x11
+	depends on CPU_AMD_SOCKET_AM2
+config CPU_AMD_SOCKET_AM2R2
+	bool
+config CPU_AMD_SOCKET_AM3
+	bool
+config CPU_AMD_SOCKET_C32_NON_AGESA
+	bool
+config CPU_AMD_SOCKET_FM2_NON_AGESA
+	bool
+config CPU_AMD_SOCKET_G34_NON_AGESA
+	bool
+config CPU_AMD_SOCKET_ASB2
+	bool
+config CPU_AMD_SOCKET_F
+	bool
+config CPU_SOCKET_TYPE
+	hex
+	default 0x10
+	depends on CPU_AMD_SOCKET_F
+config CPU_AMD_SOCKET_F_1207
+	bool
+config CPU_AMD_SOCKET_S1G1
+	bool
+config CPU_AMD_MODEL_FXX
+	bool
+config CPU_AMD_MODEL_10XXX
+	bool
+config CPU_AMD_GEODE_GX2
+	bool
+config CPU_AMD_GEODE_LX
+	bool
+config CPU_AMD_AGESA
+	bool
+	default n
+
+config CPU_AMD_AGESA_FAMILY10
+	bool
+config CPU_AMD_AGESA_FAMILY12
+	bool
+config CPU_AMD_AGESA_FAMILY14
+	bool
+config CPU_AMD_AGESA_FAMILY15
+	bool
+config CPU_AMD_AGESA_FAMILY15_TN
+	bool
+config CPU_AMD_AGESA_FAMILY15_RL
+	bool
+config CPU_AMD_AGESA_FAMILY16_KB
+	bool
+
+
+config CPU_AMD_PI
+	bool
+	default n
+config CPU_AMD_PI_00630F01
+	bool
+config CPU_AMD_PI_00730F01
+	bool
+
+config CPU_AMD_PI_00660F01
+	bool
+
+config CPU_INTEL_MODEL_6XX
+	bool
+config CPU_INTEL_MODEL_65X
+	bool
+config CPU_INTEL_MODEL_67X
+	bool
+config CPU_INTEL_MODEL_68X
+	bool
+config CPU_INTEL_MODEL_69X
+	bool
+config CPU_INTEL_MODEL_6BX
+	bool
+config CPU_INTEL_MODEL_6DX
+	bool
+config CPU_INTEL_MODEL_6EX
+	bool
+config CPU_INTEL_MODEL_6FX
+	bool
+config CPU_INTEL_MODEL_1067X
+	bool
+config CPU_INTEL_MODEL_106CX
+	bool
+config CPU_INTEL_MODEL_206AX
+	bool
+config CPU_INTEL_MODEL_306AX
+	bool
+config CPU_INTEL_FSP_MODEL_206AX
+	bool
+config CPU_INTEL_FSP_MODEL_306AX
+	bool
+config CPU_INTEL_FSP_MODEL_406DX
+	bool
+config CPU_INTEL_MODEL_2065X
+	bool
+config CPU_INTEL_MODEL_F0X
+	bool
+config CPU_INTEL_MODEL_F1X
+	bool
+config CPU_INTEL_MODEL_F2X
+	bool
+config CPU_INTEL_MODEL_F3X
+	bool
+config CPU_INTEL_MODEL_F4X
+	bool
+config CPU_INTEL_EP80579
+	bool
+config CPU_INTEL_HASWELL
+	bool
+config CPU_INTEL_SLOT_2
+	bool
+
+config CPU_INTEL_SLOT_1
+	bool
+config CPU_INTEL_SOCKET_BGA956
+	bool
+config CPU_INTEL_SOCKET_BGA1284
+	bool
+config CPU_INTEL_SOCKET_FC_PGA370
+	bool
+config CPU_INTEL_SOCKET_FCBGA559
+	bool
+config CPU_INTEL_SOCKET_MFCBGA479
+	bool
+config CPU_INTEL_SOCKET_MFCPGA478
+	bool
+config CPU_INTEL_SOCKET_MPGA478
+	bool
+config CPU_INTEL_SOCKET_MPGA479M
+	bool
+config CPU_INTEL_SOCKET_MPGA603
+	bool
+config CPU_INTEL_SOCKET_MPGA604
+	bool
+config CPU_INTEL_SOCKET_PGA370
+	bool
+config CPU_INTEL_SOCKET_441
+	bool
+config CPU_INTEL_SOCKET_LGA1155
+	bool
+config CPU_INTEL_SOCKET_LGA771
+	bool
+config CPU_INTEL_SOCKET_LGA775
+	bool
+config CPU_INTEL_SOCKET_RPGA988B
+	bool
+config CPU_INTEL_SOCKET_RPGA989
+	bool
+config CPU_INTEL_FIRMWARE_INTERFACE_TABLE
+	def_bool n
+config CPU_INTEL_NUM_FIT_ENTRIES
+	int
+	default 4
+	depends on CPU_INTEL_FIRMWARE_INTERFACE_TABLE
+config CPU_INTEL_TURBO_NOT_PACKAGE_SCOPED
+	def_bool n
+config CPU_DMP_VORTEX86EX
+	bool
+config CPU_VIA_C3
+	bool
+config CPU_VIA_C7
+	bool
+config CPU_VIA_NANO
+	bool
+config CPU_QEMU_POWER8
+	bool
+config CPU_TI_AM335X
+	bool
+	default n
+config CPU_ARMLTD_CORTEX_A9
+	bool
+config PARALLEL_CPU_INIT
+	bool
+	default n
+config PARALLEL_MP
+	def_bool n
+config UDELAY_IO
+	bool
+	default y if !UDELAY_LAPIC && !UDELAY_TSC && !UDELAY_TIMER2
+	default n
+config UDELAY_LAPIC
+	bool
+	default n
+config LAPIC_MONOTONIC_TIMER
+	def_bool n
+	depends on UDELAY_LAPIC
+	select HAVE_MONOTONIC_TIMER
+config UDELAY_LAPIC_FIXED_FSB
+	int
+config UDELAY_TSC
+	bool
+	default n
+config TSC_CONSTANT_RATE
+	def_bool n
+	depends on UDELAY_TSC
+config TSC_MONOTONIC_TIMER
+	def_bool n
+	depends on UDELAY_TSC
+	select HAVE_MONOTONIC_TIMER
+config UDELAY_TIMER2
+	bool
+	default n
+config TSC_SYNC_LFENCE
+	bool
+	default n
+config TSC_SYNC_MFENCE
+	bool
+	default n
+config XIP_ROM_SIZE
+	hex
+	default 0x10000
+config CPU_ADDR_BITS
+	int
+	default 36
+config LOGICAL_CPUS
+	bool
+	default y
+config SMM_TSEG
+	bool
+	default n
+	select RELOCATABLE_MODULES
+config SMM_MODULE_HEAP_SIZE
+	hex
+	default 0x4000
+	depends on SMM_TSEG
+config SMM_LAPIC_REMAP_MITIGATION
+	bool
+	default y if NORTHBRIDGE_INTEL_I945
+	default y if NORTHBRIDGE_INTEL_GM45
+	default y if NORTHBRIDGE_INTEL_NEHALEM
+	default n
+config SERIALIZED_SMM_INITIALIZATION
+	bool
+	default n
+config X86_AMD_FIXED_MTRRS
+	bool
+	default n
+config PLATFORM_USES_FSP1_0
+	bool
+	default n
+config BACKUP_DEFAULT_SMM_REGION
+	def_bool n
+config MIRROR_PAYLOAD_TO_RAM_BEFORE_LOADING
+	def_bool n
+config BOOT_MEDIA_SPI_BUS
+	int
+	default 0
+	depends on SPI_FLASH
+config CPU_QEMU_X86
+	bool
+	select ARCH_BOOTBLOCK_X86_32
+	select ARCH_VERSTAGE_X86_32
+	select ARCH_ROMSTAGE_X86_32
+	select ARCH_RAMSTAGE_X86_32
+	select SMP
+config CPU_ALLWINNER_A10
+	bool
+	default n
+if ARCH_X86
+config CACHE_AS_RAM
+	bool
+	default !ROMCC
+config DCACHE_RAM_BASE
+	hex
+config DCACHE_RAM_SIZE
+	hex
+config DCACHE_BSP_STACK_SIZE
+	hex
+config DCACHE_BSP_STACK_SLUSH
+	hex
+config DCACHE_AP_STACK_SIZE
+	hex
+config SMP
+	bool
+	default y if MAX_CPUS != 1
+	default n
+config AP_SIPI_VECTOR
+	hex
+	default 0xfffff000
+config	MMX
+	bool
+config SSE
+	bool
+config SSE2
+	bool
+	default n
+endif # ARCH_X86
+config SUPPORT_CPU_UCODE_IN_CBFS
+	bool
+	default n
+config USES_MICROCODE_HEADER_FILES
+	def_bool n
+	select SUPPORT_CPU_UCODE_IN_CBFS
+choice
+	prompt "Include CPU microcode in CBFS"
+config CPU_MICROCODE_CBFS_GENERATE
+	bool "Generate from tree"
+config CPU_MICROCODE_CBFS_EXTERNAL_HEADER
+	bool "Include external microcode header files"
+config CPU_MICROCODE_CBFS_NONE
+	bool "Do not include microcode updates"
+endchoice
+config CPU_MICROCODE_MULTIPLE_FILES
+	bool
+	default n
+	depends on CPU_MICROCODE_CBFS_GENERATE
+config CPU_MICROCODE_HEADER_FILES
+	string "List of space separated microcode header files with the path"
+	depends on CPU_MICROCODE_CBFS_EXTERNAL_HEADER
+config NORTHBRIDGE_AMD_AMDFAM10
+	bool
+config NORTHBRIDGE_AMD_LX
+	bool
+config NORTHBRIDGE_AMD_PI
+	bool
+	default n
+config NORTHBRIDGE_AMD_AGESA
+	bool
+	default n
+config NORTHBRIDGE_AMD_AMDK8
+	bool
+config NORTHBRIDGE_AMD_GX2
+	bool
+config AMD_NB_CIMX
+	bool
+	default n
+config NORTHBRIDGE_AMD_CIMX_RD890
+	bool
+	default n
+config NORTHBRIDGE_INTEL_FSP_RANGELEY
+	bool
+config NORTHBRIDGE_INTEL_HASWELL
+	bool
+config NORTHBRIDGE_INTEL_GM45
+	bool
+config NORTHBRIDGE_INTEL_I5000
+	bool
+config NORTHBRIDGE_INTEL_SANDYBRIDGE
+	bool
+config NORTHBRIDGE_INTEL_IVYBRIDGE
+	bool
+config NORTHBRIDGE_INTEL_SCH
+	bool
+config NORTHBRIDGE_INTEL_I82830
+	bool
+config NORTHBRIDGE_INTEL_E7501
+	bool
+config NORTHBRIDGE_INTEL_I3100
+	bool
+config NORTHBRIDGE_INTEL_I855
+	bool
+config NORTHBRIDGE_INTEL_I82810
+	bool
+config NORTHBRIDGE_INTEL_FSP_SANDYBRIDGE
+	bool
+config NORTHBRIDGE_INTEL_FSP_IVYBRIDGE
+	bool
+config NORTHBRIDGE_INTEL_X4X
+	bool
+config NORTHBRIDGE_INTEL_PINEVIEW
+	bool
+config NORTHBRIDGE_INTEL_I440BX
+	bool
+config SDRAMPWR_4DIMM
+	bool
+	depends on NORTHBRIDGE_INTEL_I440BX
+	default n
+config NORTHBRIDGE_INTEL_E7505
+	bool
+config NORTHBRIDGE_INTEL_COMMON_MRC_CACHE
+	def_bool n
+config NORTHBRIDGE_INTEL_I945
+	bool
+config NORTHBRIDGE_INTEL_NEHALEM
+	bool
+config NORTHBRIDGE_RDC_R8610
+	bool
+config NORTHBRIDGE_DMP_VORTEX86EX
+	bool
+config NORTHBRIDGE_VIA_CX700
+	bool
+config NORTHBRIDGE_VIA_VX800
+	bool
+config NORTHBRIDGE_VIA_CN700
+	bool
+config NORTHBRIDGE_VIA_VX900
+	bool
+comment "Southbridge"
+config SOUTHBRIDGE_AMD_SB800
+	bool
+config SOUTHBRIDGE_AMD_AMD8132
+	bool
+config SOUTHBRIDGE_AMD_AMD8111
+	bool
+config SOUTHBRIDGE_AMD_RS780
+	bool
+config SOUTHBRIDGE_AMD_AMD8151
+	bool
+config SOUTHBRIDGE_AMD_SB600
+	bool
+config SOUTHBRIDGE_AMD_SB700
+	bool
+config SOUTHBRIDGE_AMD_PI_BOLTON
+	bool
+config SOUTHBRIDGE_AMD_PI_AVALON
+	bool
+config SOUTHBRIDGE_AMD_PI_KERN
+	bool
+config HUDSON_DISABLE_IMC
+	bool
+config HUDSON_UART
+	bool "UART controller on Kern"
+	default n
+	depends on SOUTHBRIDGE_AMD_PI_KERN
+config SOUTHBRIDGE_AMD_CS5535
+	bool
+config SOUTHBRIDGE_AMD_SR5650
+	bool
+config SOUTHBRIDGE_AMD_AMD8131
+	bool
+config SOUTHBRIDGE_AMD_AGESA_BOLTON
+	bool
+config SOUTHBRIDGE_AMD_AGESA_HUDSON
+	bool
+config SOUTHBRIDGE_AMD_AGESA_YANGTZE
+	bool
+
+
+config SOUTHBRIDGE_AMD_CS5536
+	bool
+config SOUTHBRIDGE_AMD_RS690
+	bool
+config AMD_SB_CIMX
+	bool
+	default n
+config SOUTHBRIDGE_AMD_CIMX_SB700
+	bool
+config SOUTHBRIDGE_AMD_CIMX_SB800
+	bool
+	default n
+config SOUTHBRIDGE_AMD_CIMX_SB900
+	bool
+	default n
+config SOUTHBRIDGE_INTEL_BD82X6X
+	bool
+config SOUTHBRIDGE_INTEL_C216
+	bool
+config SOUTHBRIDGE_INTEL_I82870
+	bool
+config SOUTHBRIDGE_INTEL_I82801IX
+	bool
+	select SOUTHBRIDGE_INTEL_COMMON
+	select IOAPIC
+	select HAVE_USBDEBUG
+	select HAVE_HARD_RESET
+	select USE_WATCHDOG_ON_BOOT
+	select HAVE_SMI_HANDLER
+	select HAVE_USBDEBUG_OPTIONS
+
+config EHCI_BAR
+	hex
+	default 0xfef00000
+config HPET_MIN_TICKS
+	hex
+	default 0x80
+config BOOTBLOCK_SOUTHBRIDGE_INIT
+	string
+	default "southbridge/intel/i82801ix/bootblock.c"
+
+config SOUTHBRIDGE_INTEL_FSP_RANGELEY
+	bool
+
+
+config SOUTHBRIDGE_INTEL_I82801DX
+	bool
+config SOUTHBRIDGE_INTEL_I82801EX
+	bool
+config SOUTHBRIDGE_INTEL_IBEXPEAK
+	bool
+config SOUTHBRIDGE_INTEL_SCH
+	bool
+config SOUTHBRIDGE_INTEL_I3100
+	bool
+config SOUTHBRIDGE_INTEL_FSP_BD82X6X
+	bool
+config SOUTHBRIDGE_INTEL_I82801AX
+	bool
+config SOUTHBRIDGE_INTEL_I82801GX
+	bool
+config SOUTHBRIDGE_INTEL_COMMON
+	def_bool n
+config SOUTHBRIDGE_INTEL_COMMON_GPIO
+	def_bool n
+config SOUTHBRIDGE_INTEL_I82371EB
+	bool
+config SOUTHBRIDGE_INTEL_FSP_I89XX
+	bool
+config SOUTHBRIDGE_INTEL_LYNXPOINT
+	bool
+
+
+config SOUTHBRIDGE_INTEL_I82801BX
+	bool
+config SOUTHBRIDGE_RDC_R8610
+	bool
+config SOUTHBRIDGE_DMP_VORTEX86EX
+	bool
+config SOUTHBRIDGE_SIS_SIS966
+	bool
+config SOUTHBRIDGE_VIA_K8T890
+	bool
+config SOUTHBRIDGE_VIA_VT8237R
+	bool
+
+config SOUTHBRIDGE_BROADCOM_BCM21000
+	bool
+config SOUTHBRIDGE_BROADCOM_BCM5780
+	bool
+config SOUTHBRIDGE_BROADCOM_BCM5785
+	bool
+	select HAVE_HARD_RESET
+config SOUTHBRIDGE_RICOH_RL5C476
+	bool
+config SOUTHBRIDGE_TI_PCIXX12
+	bool
+config SOUTHBRIDGE_TI_PCI7420
+	bool
+config SOUTHBRIDGE_TI_PCI1X2X
+	bool
+config SOUTHBRIDGE_NVIDIA_CK804
+	bool
+config SOUTHBRIDGE_NVIDIA_MCP55
+	bool
+comment "Super I/O"
+config SUPERIO_WINBOND_COMMON_ROMSTAGE
+	bool
+config SUPERIO_WINBOND_W83627DHG
+	bool
+	select SUPERIO_WINBOND_COMMON_ROMSTAGE
+config SUPERIO_WINBOND_W83627EHG
+	bool
+	select SUPERIO_WINBOND_COMMON_ROMSTAGE
+config SUPERIO_WINBOND_W83627HF
+	bool
+	select SUPERIO_WINBOND_COMMON_ROMSTAGE
+config SUPERIO_WINBOND_W83627THG
+	bool
+	select SUPERIO_WINBOND_COMMON_ROMSTAGE
+config SUPERIO_WINBOND_W83627UHG
+	bool
+	select SUPERIO_WINBOND_COMMON_ROMSTAGE
+config SUPERIO_WINBOND_W83667HG_A
+	bool
+	select SUPERIO_WINBOND_COMMON_ROMSTAGE
+config SUPERIO_WINBOND_W83697HF
+	bool
+	select SUPERIO_WINBOND_COMMON_ROMSTAGE
+config SUPERIO_WINBOND_W83977TF
+	bool
+	select SUPERIO_WINBOND_COMMON_ROMSTAGE
+config SUPERIO_WINBOND_WPCD376I
+	bool
+	select SUPERIO_WINBOND_COMMON_ROMSTAGE
+config SUPERIO_INTEL_I3100
+	bool
+config SUPERIO_INTEL_I8900
+	bool
+config SUPERIO_RENESAS_M3885X
+	bool
+config SUPERIO_WANTS_14MHZ_CLOCK
+	bool
+config SUPERIO_SMSC_DME1737
+	bool
+config SUPERIO_SMSC_FDC37N972
+	bool
+config SUPERIO_SMSC_LPC47B272
+	bool
+config SUPERIO_SMSC_LPC47B397
+	bool
+config SUPERIO_SMSC_LPC47M10X
+	bool
+config SUPERIO_SMSC_LPC47M15X
+	bool
+config SUPERIO_SMSC_LPC47N207
+	bool
+config SUPERIO_SMSC_LPC47N217
+	bool
+config SUPERIO_SMSC_LPC47N227
+	bool
+config SUPERIO_SMSC_SIO10N268
+	bool
+config SUPERIO_SMSC_SIO1007
+	bool
+config SUPERIO_SMSC_KBC1100
+	bool
+config SUPERIO_SMSC_MEC1308
+	bool
+config SUPERIO_SMSC_SMSCSUPERIO
+	bool
+	select SUPERIO_WANTS_14MHZ_CLOCK
+config SUPERIO_SMSC_SIO1036
+	bool
+config SUPERIO_SMSC_SCH4037
+	bool
+config SUPERIO_SERVERENGINES_PILOT
+	bool
+config SUPERIO_NSC_PC87309
+	bool
+config SUPERIO_NSC_PC87360
+	bool
+config SUPERIO_NSC_PC87366
+	bool
+config SUPERIO_NSC_PC87382
+	bool
+config SUPERIO_NSC_PC87384
+	bool
+config SUPERIO_NSC_PC87392
+	bool
+config SUPERIO_NSC_PC87417
+	bool
+config SUPERIO_NSC_PC97317
+	bool
+config SUPERIO_VIA_VT1211
+	bool
+config SUPERIO_NUVOTON_COMMON_ROMSTAGE
+	bool
+config SUPERIO_NUVOTON_WPCM450
+	bool
+config SUPERIO_NUVOTON_NCT5104D
+	bool
+	select SUPERIO_NUVOTON_COMMON_ROMSTAGE
+config SUPERIO_NUVOTON_NCT5572D
+	bool
+	select SUPERIO_NUVOTON_COMMON_ROMSTAGE
+config SUPERIO_NUVOTON_NCT6779D
+	bool
+	select SUPERIO_NUVOTON_COMMON_ROMSTAGE
+config SUPERIO_ITE_COMMON_ROMSTAGE
+	bool
+config SUPERIO_ITE_IT8671F
+	bool
+	select SUPERIO_ITE_COMMON_ROMSTAGE
+config SUPERIO_ITE_IT8712F
+	bool
+	select SUPERIO_ITE_COMMON_ROMSTAGE
+config SUPERIO_ITE_IT8716F
+	bool
+	select SUPERIO_ITE_COMMON_ROMSTAGE
+config SUPERIO_ITE_IT8716F_OVERRIDE_FANCTL
+	bool
+	depends on SUPERIO_ITE_IT8716F
+	default n
+	select SUPERIO_ITE_COMMON_ROMSTAGE
+config SUPERIO_ITE_IT8718F
+	bool
+	select SUPERIO_ITE_COMMON_ROMSTAGE
+config SUPERIO_ITE_IT8721F
+	bool
+	select SUPERIO_ITE_COMMON_ROMSTAGE
+config SUPERIO_ITE_IT8728F
+	bool
+	select SUPERIO_ITE_COMMON_ROMSTAGE
+config SUPERIO_ITE_IT8772F
+	bool
+	select SUPERIO_ITE_COMMON_ROMSTAGE
+config SUPERIO_FINTEK_COMMON_ROMSTAGE
+	bool
+config SUPERIO_FINTEK_F71805F
+	bool
+	select SUPERIO_FINTEK_COMMON_ROMSTAGE
+config SUPERIO_FINTEK_F71859
+	bool
+	select SUPERIO_FINTEK_COMMON_ROMSTAGE
+config SUPERIO_FINTEK_F71863FG
+	bool
+	select SUPERIO_FINTEK_COMMON_ROMSTAGE
+config SUPERIO_FINTEK_F71869AD
+	bool
+	select SUPERIO_FINTEK_COMMON_ROMSTAGE
+config SUPERIO_FINTEK_F71872
+	bool
+	select SUPERIO_FINTEK_COMMON_ROMSTAGE
+config SUPERIO_FINTEK_F81216H
+	bool
+config SUPERIO_FINTEK_F81865F
+	bool
+	select SUPERIO_FINTEK_COMMON_ROMSTAGE
+config SUPERIO_FINTEK_F81866D
+	bool
+	select SUPERIO_FINTEK_COMMON_ROMSTAGE
+comment "Embedded Controllers"
+config EC_ACPI
+	bool
+config EC_KONTRON_IT8516E
+	select EC_ACPI
+	bool
+config EC_SMSC_MEC1308
+	bool
+config EC_COMPAL_ENE932
+	bool
+config EC_QUANTA_IT8518
+	bool
+config EC_QUANTA_ENE_KB3940Q
+	bool
+config EC_GOOGLE_CHROMEEC
+	bool
+config EC_GOOGLE_CHROMEEC_ACPI_MEMMAP
+	depends on EC_GOOGLE_CHROMEEC_LPC
+	def_bool n
+config EC_GOOGLE_CHROMEEC_I2C
+	depends on EC_GOOGLE_CHROMEEC
+	bool
+	default n
+config EC_GOOGLE_CHROMEEC_I2C_BUS
+	depends on EC_GOOGLE_CHROMEEC_I2C
+	hex "I2C bus for Google's Chrome EC"
+config EC_GOOGLE_CHROMEEC_I2C_CHIP
+	depends on EC_GOOGLE_CHROMEEC_I2C
+	hex
+	default 0x1e
+config EC_GOOGLE_CHROMEEC_I2C_PROTO3
+	depends on EC_GOOGLE_CHROMEEC_I2C
+	bool
+	default n
+config EC_GOOGLE_CHROMEEC_LPC
+	depends on EC_GOOGLE_CHROMEEC && ARCH_X86  # Needs Plug-and-play.
+	def_bool y
+config EC_GOOGLE_CHROMEEC_MEC
+	depends on EC_GOOGLE_CHROMEEC_LPC
+	def_bool n
+config EC_GOOGLE_CHROMEEC_PD
+	depends on EC_GOOGLE_CHROMEEC
+	def_bool n
+config EC_GOOGLE_CHROMEEC_SPI
+	depends on EC_GOOGLE_CHROMEEC
+	def_bool n
+config EC_GOOGLE_CHROMEEC_SPI_BUS
+	depends on EC_GOOGLE_CHROMEEC_SPI
+	hex
+config EC_GOOGLE_CHROMEEC_SPI_WAKEUP_DELAY_US
+	depends on EC_GOOGLE_CHROMEEC_SPI
+	int
+	default 0
+config EC_GOOGLE_CHROMEEC_SPI_CHIP
+	depends on EC_GOOGLE_CHROMEEC_SPI
+	hex
+	default 0
+config EC_EXTERNAL_FIRMWARE
+	depends on EC_GOOGLE_CHROMEEC
+	def_bool n
+config EC_GOOGLE_CHROMEEC_BOARDNAME
+	depends on EC_GOOGLE_CHROMEEC && !EC_EXTERNAL_FIRMWARE
+	string "Chrome EC board name for EC"
+	default ""
+config EC_GOOGLE_CHROMEEC_PD_BOARDNAME
+	depends on EC_GOOGLE_CHROMEEC_PD && !EC_EXTERNAL_FIRMWARE
+	string "Chrome EC board name for PD"
+	default ""
+config EC_LENOVO_H8
+	select EC_ACPI
+	bool
+config H8_DOCK_EARLY_INIT
+	bool
+config EC_LENOVO_PMH7
+	bool
+config EC_PURISM_LIBREM
+	bool
+config HAVE_INTEL_FIRMWARE
+	bool
+
+config FSP_VENDORCODE_HEADER_PATH
+	string
+	default "fsp1_0/ivybridge_bd82x6x" if CPU_INTEL_FSP_MODEL_306AX && SOUTHBRIDGE_INTEL_FSP_BD82X6X
+	default "fsp1_0/ivybridge_i89xx/" if CPU_INTEL_FSP_MODEL_306AX && SOUTHBRIDGE_INTEL_FSP_I89XX
+	default "fsp1_0/baytrail" if SOC_INTEL_FSP_BAYTRAIL
+	default "fsp1_0/broadwell_de" if SOC_INTEL_FSP_BROADWELL_DE
+	default "fsp1_0/rangeley" if CPU_INTEL_FSP_MODEL_406DX
+config UEFI_2_4_BINDING
+	def_bool n
+config USE_SIEMENS_HWILIB
+	bool
+	default n
+config MAINBOARD_HAS_CHROMEOS
+	def_bool n
+menu "ChromeOS"
+	depends on MAINBOARD_HAS_CHROMEOS
+config CHROMEOS
+	bool 
+	default n
+endmenu
+config ARCH_MIPS
+	bool
+	default n
+config ARCH_BOOTBLOCK_MIPS
+	bool
+	default n
+	select ARCH_MIPS
+	select BOOTBLOCK_CUSTOM
+	select C_ENVIRONMENT_BOOTBLOCK
+config ARCH_VERSTAGE_MIPS
+	bool
+	default n
+config ARCH_ROMSTAGE_MIPS
+	bool
+	default n
+config ARCH_RAMSTAGE_MIPS
+	bool
+	default n
+config ARCH_RISCV
+	bool
+	default n
+config ARCH_BOOTBLOCK_RISCV
+	bool
+	default n
+	select ARCH_RISCV
+	select BOOTBLOCK_CUSTOM
+	select C_ENVIRONMENT_BOOTBLOCK
+config ARCH_VERSTAGE_RISCV
+	bool
+	default n
+config ARCH_ROMSTAGE_RISCV
+	bool
+	default n
+config ARCH_RAMSTAGE_RISCV
+	bool
+	default n
+config ARCH_POWER8
+	bool
+	default n
+config ARCH_BOOTBLOCK_POWER8
+	bool
+	default n
+config ARCH_VERSTAGE_POWER8
+	bool
+	default n
+config ARCH_ROMSTAGE_POWER8
+	bool
+	default n
+config ARCH_RAMSTAGE_POWER8
+	bool
+	default n
+config ARCH_ARM
+	bool
+	default n
+config ARCH_BOOTBLOCK_ARM
+	bool
+	default n
+	select ARCH_ARM
+	select C_ENVIRONMENT_BOOTBLOCK
+config ARCH_VERSTAGE_ARM
+	bool
+	default n
+config ARCH_ROMSTAGE_ARM
+	bool
+	default n
+config ARCH_RAMSTAGE_ARM
+	bool
+	default n
+config ARCH_BOOTBLOCK_ARMV4
+	def_bool n
+	select ARCH_BOOTBLOCK_ARM
+config ARCH_VERSTAGE_ARMV4
+	def_bool n
+	select ARCH_VERSTAGE_ARM
+config ARCH_ROMSTAGE_ARMV4
+	def_bool n
+	select ARCH_ROMSTAGE_ARM
+config ARCH_RAMSTAGE_ARMV4
+	def_bool n
+	select ARCH_RAMSTAGE_ARM
+config ARCH_BOOTBLOCK_ARMV7
+	def_bool n
+	select ARCH_BOOTBLOCK_ARM
+config ARCH_VERSTAGE_ARMV7
+	def_bool n
+	select ARCH_VERSTAGE_ARM
+config ARCH_ROMSTAGE_ARMV7
+	def_bool n
+	select ARCH_ROMSTAGE_ARM
+config ARCH_RAMSTAGE_ARMV7
+	def_bool n
+	select ARCH_RAMSTAGE_ARM
+config ARCH_BOOTBLOCK_ARMV7_M
+	def_bool n
+	select ARCH_BOOTBLOCK_ARM
+config ARCH_VERSTAGE_ARMV7_M
+	def_bool n
+	select ARCH_VERSTAGE_ARM
+config ARM_LPAE
+	bool
+	default n
+config ARCH_X86
+	bool
+	default n
+	select PCI
+config ARCH_BOOTBLOCK_X86_32
+	bool
+	default n
+	select ARCH_X86
+	select BOOTBLOCK_CUSTOM if !C_ENVIRONMENT_BOOTBLOCK
+config ARCH_VERSTAGE_X86_32
+	bool
+	default n
+config ARCH_ROMSTAGE_X86_32
+	bool
+	default n
+config ARCH_RAMSTAGE_X86_32
+	bool
+	default n
+config ARCH_BOOTBLOCK_X86_64
+	bool
+	default n
+	select ARCH_X86
+	select BOOTBLOCK_CUSTOM if !C_ENVIRONMENT_BOOTBLOCK
+config ARCH_VERSTAGE_X86_64
+	bool
+	default n
+config ARCH_ROMSTAGE_X86_64
+	bool
+	default n
+config ARCH_RAMSTAGE_X86_64
+	bool
+	default n
+config USE_MARCH_586
+	def_bool n
+config AP_IN_SIPI_WAIT
+	bool
+	default n
+	depends on ARCH_X86 && SMP
+config SIPI_VECTOR_IN_ROM
+	bool
+	default n
+	depends on ARCH_X86
+config RAMBASE
+	hex
+	default 0x100000
+config X86_TOP4G_BOOTMEDIA_MAP
+	bool
+	default y
+config NUM_IPI_STARTS
+	int
+	default 2
+config ROMCC
+	bool
+	default n
+config LATE_CBMEM_INIT
+	def_bool n
+config PC80_SYSTEM
+	bool
+	default y if ARCH_X86
+config BOOTBLOCK_MAINBOARD_INIT
+	string
+config BOOTBLOCK_NORTHBRIDGE_INIT
+	string
+config BOOTBLOCK_RESETS
+	string
+config HAVE_CMOS_DEFAULT
+	def_bool n
+config CMOS_DEFAULT_FILE
+	string
+	default "src/mainboard/emulation/qemu-q35/cmos.default"
+	depends on HAVE_CMOS_DEFAULT
+config BOOTBLOCK_SOUTHBRIDGE_INIT
+	string
+config IOAPIC_INTERRUPTS_ON_FSB
+	bool
+	default y if !IOAPIC_INTERRUPTS_ON_APIC_SERIAL_BUS
+config IOAPIC_INTERRUPTS_ON_APIC_SERIAL_BUS
+	bool
+	default n
+config HPET_ADDRESS
+	hex
+	default 0xfed00000
+config ID_SECTION_OFFSET
+	hex
+	default 0x80
+config C_ENV_BOOTBLOCK_SIZE
+	hex
+	default 0x10000
+config ROMSTAGE_ADDR
+	hex
+	default 0x2000000
+config VERSTAGE_ADDR
+	hex
+	default 0x2000000
+config POSTCAR_STAGE
+	def_bool n
+config ARCH_ARM64
+	bool
+	default n
+config ARCH_BOOTBLOCK_ARM64
+	bool
+	default n
+	select ARCH_ARM64
+	select C_ENVIRONMENT_BOOTBLOCK
+config ARCH_VERSTAGE_ARM64
+	bool
+	default n
+config ARCH_ROMSTAGE_ARM64
+	bool
+	default n
+config ARCH_RAMSTAGE_ARM64
+	bool
+	default n
+config ARCH_BOOTBLOCK_ARMV8_64
+	def_bool n
+	select ARCH_BOOTBLOCK_ARM64
+config ARCH_VERSTAGE_ARMV8_64
+	def_bool n
+	select ARCH_VERSTAGE_ARM64
+config ARCH_ROMSTAGE_ARMV8_64
+	def_bool n
+	select ARCH_ROMSTAGE_ARM64
+config ARCH_RAMSTAGE_ARMV8_64
+	def_bool n
+	select ARCH_RAMSTAGE_ARM64
+config ARM64_USE_ARM_TRUSTED_FIRMWARE
+	bool
+	default n
+	depends on ARCH_RAMSTAGE_ARM64
+config ARM64_USE_SECURE_OS
+	bool
+	default n
+	depends on ARM64_USE_ARM_TRUSTED_FIRMWARE
+config ARM64_SECURE_OS_FILE
+	string "Secure OS binary file"
+	depends on ARM64_USE_SECURE_OS
+config ARM64_A53_ERRATUM_843419
+	bool
+	default n
+endmenu
+menu "Devices"
+config MAINBOARD_HAS_NATIVE_VGA_INIT
+	bool
+	default n
+config NATIVE_VGA_INIT_USE_EDID
+	bool
+	default n if DRIVERS_XGI_Z9S
+	default y if !DRIVERS_XGI_Z9S
+config MAINBOARD_HAS_NATIVE_VGA_INIT_TEXTMODECFG
+	bool
+	default n
+config MAINBOARD_DO_NATIVE_VGA_INIT
+	bool "Use native graphics initialization"
+	depends on MAINBOARD_HAS_NATIVE_VGA_INIT
+	default n
+config VGA_ROM_RUN
+	bool "Run VGA Option ROMs"
+	default n if PAYLOAD_SEABIOS
+	default y if !PAYLOAD_SEABIOS
+	depends on PCI && !MAINBOARD_DO_NATIVE_VGA_INIT
+config S3_VGA_ROM_RUN
+	bool "Re-run VGA Option ROMs on S3 resume"
+	default y
+	depends on VGA_ROM_RUN && HAVE_ACPI_RESUME
+config ALWAYS_LOAD_OPROM
+	def_bool n
+	depends on VGA_ROM_RUN
+config ON_DEVICE_ROM_LOAD
+	bool "Load Option ROMs on PCI devices"
+	default n if PAYLOAD_SEABIOS
+	default y if !PAYLOAD_SEABIOS
+	depends on PCI
+choice
+	prompt "Option ROM execution type"
+	default PCI_OPTION_ROM_RUN_YABEL if !ARCH_X86
+	default PCI_OPTION_ROM_RUN_REALMODE if ARCH_X86
+	depends on VGA_ROM_RUN 
+config PCI_OPTION_ROM_RUN_REALMODE
+	prompt "Native mode"
+	bool
+	depends on ARCH_X86
+config PCI_OPTION_ROM_RUN_YABEL
+	prompt "Secure mode"
+	bool
+endchoice
+config YABEL_PCI_ACCESS_OTHER_DEVICES
+	prompt "Allow Option ROMs to access other devices"
+	bool
+	depends on PCI_OPTION_ROM_RUN_YABEL
+config YABEL_PCI_FAKE_WRITING_OTHER_DEVICES_CONFIG
+	prompt "Fake success on writing other device's config space"
+	bool
+	depends on YABEL_PCI_ACCESS_OTHER_DEVICES
+config YABEL_VIRTMEM_LOCATION
+	prompt "Location of YABEL's virtual memory"
+	hex
+	depends on PCI_OPTION_ROM_RUN_YABEL
+	default 0x1000000
+config YABEL_DIRECTHW
+	prompt "Direct hardware access"
+	bool
+	depends on PCI_OPTION_ROM_RUN_YABEL && ARCH_X86
+config MULTIPLE_VGA_ADAPTERS
+	bool
+	default n
+config SMBUS_HAS_AUX_CHANNELS
+	bool
+	default n
+config SPD_CACHE
+	bool
+	default n
+config PCI
+	bool
+	default n
+config HYPERTRANSPORT_PLUGIN_SUPPORT
+	bool
+	depends on PCI
+	default n
+config PCIX_PLUGIN_SUPPORT
+	bool
+	depends on PCI
+	default y
+config PCIEXP_PLUGIN_SUPPORT
+	bool
+	depends on PCI
+	default y
+config CARDBUS_PLUGIN_SUPPORT
+	bool
+	depends on PCI
+	default y
+config AZALIA_PLUGIN_SUPPORT
+	bool
+	depends on PCI
+	default n
+config PCIEXP_COMMON_CLOCK
+	prompt "Enable PCIe Common Clock"
+	bool
+	depends on PCIEXP_PLUGIN_SUPPORT
+	default n
+config PCIEXP_ASPM
+	prompt "Enable PCIe ASPM"
+	bool
+	depends on PCIEXP_PLUGIN_SUPPORT
+	default n
+config PCIEXP_CLK_PM
+	prompt "Enable PCIe Clock Power Management"
+	bool
+	depends on PCIEXP_PLUGIN_SUPPORT
+	default n
+config EARLY_PCI_BRIDGE
+	bool
+	depends on PCI
+	default n
+config PCIEXP_L1_SUB_STATE
+	prompt "Enable PCIe ASPM L1 SubState"
+	bool
+	depends on PCIEXP_PLUGIN_SUPPORT && MMCONF_SUPPORT
+	default n
+if EARLY_PCI_BRIDGE
+config EARLY_PCI_BRIDGE_DEVICE
+	hex "bridge device"
+	default 0x0
+config EARLY_PCI_BRIDGE_FUNCTION
+	hex "bridge function"
+	default 0x0
+config EARLY_PCI_MMIO_BASE
+	hex "MMIO window base"
+	default 0x0
+endif # EARLY_PCI_BRIDGE
+config SUBSYSTEM_VENDOR_ID
+	hex "Override PCI Subsystem Vendor ID"
+	depends on PCI
+	default "0x0000"
+config SUBSYSTEM_DEVICE_ID
+	hex "Override PCI Subsystem Device ID"
+	depends on PCI
+	default "0x0000"
+
+# do not add a vga_bios
+config VGA_BIOS
+	bool
+	default n
+config VGA_BIOS_FILE
+	string "VGA BIOS path and filename"
+	depends on VGA_BIOS
+	default "vgabios.bin"
+config VGA_BIOS_ID
+	string "VGA device PCI IDs"
+	depends on VGA_BIOS
+	default "1106,3230"
+config INTEL_MBI
+	bool "Add an MBI image"
+	depends on NORTHBRIDGE_INTEL_I82830
+config MBI_FILE
+	string "Intel MBI path and filename"
+	depends on INTEL_MBI
+	default "mbi.bin"
+config SOFTWARE_I2C
+	bool "Enable I2C controller emulation in software"
+	default n
+endmenu
+menu "Display"
+	depends on PCI_OPTION_ROM_RUN_YABEL || PCI_OPTION_ROM_RUN_REALMODE || MAINBOARD_DO_NATIVE_VGA_INIT
+config FRAMEBUFFER_SET_VESA_MODE
+	prompt "Set framebuffer graphics resolution"
+	bool
+	depends on PCI_OPTION_ROM_RUN_YABEL || PCI_OPTION_ROM_RUN_REALMODE
+choice
+	prompt "framebuffer graphics resolution"
+	default FRAMEBUFFER_VESA_MODE_117
+	depends on FRAMEBUFFER_SET_VESA_MODE
+config FRAMEBUFFER_VESA_MODE_117
+	bool "1024x768 64k-color (5:6:5)"
+endchoice
+config FRAMEBUFFER_VESA_MODE
+	hex
+	default 0x117 if FRAMEBUFFER_VESA_MODE_117
+config FRAMEBUFFER_KEEP_VESA_MODE
+	prompt "Keep VESA framebuffer"
+	bool
+	depends on PCI_OPTION_ROM_RUN_YABEL || PCI_OPTION_ROM_RUN_REALMODE
+config BOOTSPLASH
+	prompt "Show graphical bootsplash"
+	bool
+	depends on FRAMEBUFFER_SET_VESA_MODE
+endmenu
+menu "Generic Drivers"
+config DRIVERS_AS3722_RTC
+	bool
+	default n
+	select RTC
+config DRIVERS_AS3722_RTC_BUS
+	int "AS3722 RTC bus"
+	depends on DRIVERS_AS3722_RTC
+	default 0
+config DRIVERS_AS3722_RTC_ADDR
+	hex "AS3722 RTC chip address"
+	depends on DRIVERS_AS3722_RTC
+	default 0x00
+config DRIVER_XPOWERS_AXP209
+	bool
+	default n
+
+config SPI_FLASH
+	bool
+	default n
+if SPI_FLASH
+config SPI_ATOMIC_SEQUENCING
+	bool
+	default y if ARCH_X86
+	default n if !ARCH_X86
+config SPI_FLASH_MEMORY_MAPPED
+	bool
+	default y if ARCH_X86
+	default n if !ARCH_X86
+config SPI_FLASH_SMM
+	bool "SPI flash driver support in SMM"
+	default n
+	depends on HAVE_SMI_HANDLER
+config SPI_FLASH_NO_FAST_READ
+	bool "Disable Fast Read command"
+	default n
+config SPI_FLASH_ADESTO
+	bool
+	default y if !COMMON_CBFS_SPI_WRAPPER
+config SPI_FLASH_AMIC
+	bool
+	default y if !COMMON_CBFS_SPI_WRAPPER
+config SPI_FLASH_ATMEL
+	bool
+	default y if !COMMON_CBFS_SPI_WRAPPER
+config SPI_FLASH_EON
+	bool
+	default y if !COMMON_CBFS_SPI_WRAPPER
+config SPI_FLASH_GIGADEVICE
+	bool
+	default y if !COMMON_CBFS_SPI_WRAPPER
+config SPI_FLASH_MACRONIX
+	bool
+	default y if !COMMON_CBFS_SPI_WRAPPER
+config SPI_FLASH_SPANSION
+	bool
+	default y if !COMMON_CBFS_SPI_WRAPPER
+config SPI_FLASH_SST
+	bool
+	default y if !COMMON_CBFS_SPI_WRAPPER
+config SPI_FLASH_STMICRO
+	bool
+	default y if !COMMON_CBFS_SPI_WRAPPER
+config SPI_FLASH_WINBOND
+	bool
+	default y if !COMMON_CBFS_SPI_WRAPPER
+config SPI_FLASH_FAST_READ_DUAL_OUTPUT_3B
+	bool
+	default n
+	depends on SPI_FLASH
+endif # SPI_FLASH
+config HAVE_SPI_CONSOLE_SUPPORT
+	def_bool n
+config ELOG
+	depends on SPI_FLASH
+	bool "Support for flash based event log"
+	default n
+if ELOG
+config ELOG_DEBUG
+	bool "Enable debug output for event logging"
+	default n
+config ELOG_FLASH_BASE
+	hex "Event log offset into flash"
+	default 0
+config ELOG_AREA_SIZE
+	hex "Size of Event Log area in flash"
+	default 0x1000
+config ELOG_CBMEM
+	bool "Store a copy of ELOG in CBMEM"
+	default n
+endif
+config ELOG_GSMI
+	depends on ELOG && SPI_FLASH_SMM && SMM_TSEG
+	bool "SMI interface to write and clear event log"
+	default n
+config ELOG_BOOT_COUNT
+	depends on ELOG
+	bool "Maintain a monotonic boot number in CMOS"
+	default n
+config ELOG_BOOT_COUNT_CMOS_OFFSET
+	depends on ELOG && ELOG_BOOT_COUNT && !USE_OPTION_TABLE
+	int "Offset in CMOS to store the boot count"
+	default 0
+config HAVE_USBDEBUG
+	bool
+	default y if HAVE_USBDEBUG_OPTIONS
+	default n
+config HAVE_USBDEBUG_OPTIONS
+	def_bool n
+config USBDEBUG
+	bool
+	default n
+	depends on HAVE_USBDEBUG
+if USBDEBUG
+config USBDEBUG_IN_ROMSTAGE
+	bool "Enable early (pre-RAM) usbdebug"
+	default y
+	depends on EARLY_CBMEM_INIT
+config USBDEBUG_HCD_INDEX
+	int
+	default 0
+	prompt "Index for EHCI controller to use with usbdebug"
+config USBDEBUG_DEFAULT_PORT
+	int
+	default 0
+	prompt "Default USB port to use as Debug Port"
+choice
+	prompt "Type of dongle"
+	default USBDEBUG_DONGLE_STD
+config USBDEBUG_DONGLE_STD
+	bool "Net20DC or compatible"
+config USBDEBUG_DONGLE_BEAGLEBONE
+	bool "BeagleBone"
+config USBDEBUG_DONGLE_BEAGLEBONE_BLACK
+	bool "BeagleBone Black"
+config USBDEBUG_DONGLE_FTDI_FT232H
+	bool "FTDI FT232H UART"
+endchoice
+config USBDEBUG_OPTIONAL_HUB_PORT
+	int
+	default 2 if USBDEBUG_DONGLE_BEAGLEBONE
+	default 0
+endif # USBDEBUG
+config IPMI_KCS
+	bool
+	default n
+config GIC
+	def_bool n
+config DRIVERS_UART
+	bool
+	default n
+config DRIVERS_UART_8250IO
+	bool "Serial port on SuperIO"
+	depends on !ARCH_ARM
+	default n if NO_UART_ON_SUPERIO
+	default y if ARCH_X86
+config NO_UART_ON_SUPERIO
+	def_bool n
+config DRIVERS_UART_8250MEM
+	bool
+	default n
+config DRIVERS_UART_8250MEM_32
+	bool
+	default n
+	select DRIVERS_UART_8250MEM
+config HAVE_UART_SPECIAL
+	bool
+	default n
+config DRIVERS_UART_OXPCIE
+	bool
+	default n
+	depends on PCI
+	select DRIVERS_UART_8250MEM
+	select EARLY_PCI_BRIDGE
+config DRIVERS_UART_PL011
+	bool
+	default n
+	select HAVE_UART_SPECIAL
+config DRIVERS_DEC_21143
+	bool
+config PLATFORM_USES_FSP1_1
+	bool
+	select UEFI_2_4_BINDING
+config DRIVER_INTEL_I210
+	bool
+	default n
+
+config PLATFORM_USES_FSP2_0
+	bool
+config INTEL_DP
+	bool
+	default n
+config INTEL_DDI
+	bool
+	default n
+config INTEL_EDID
+	bool
+	default n
+config INTEL_INT15
+	bool
+	default n
+config INTEL_GMA_ACPI
+	bool
+	default n
+config DRIVER_XPOWERS_AXP209
+	bool
+	default n
+config DRIVERS_ICS_954309
+	bool
+config DRIVERS_XGI_Z9S
+	bool
+config DRIVERS_XGI_Z79_COMMON
+	bool
+
+config DRIVERS_RICOH_RCE822
+	bool
+	default n
+config DRIVERS_GENERIC_IOAPIC
+	bool
+config DRIVERS_GENERIC_GENERIC
+	bool
+config DRIVERS_TI_TPS65913
+	bool "TI TPS65913 support"
+	default n
+config DRIVERS_TI_TPS65913_RTC
+	bool
+	default n
+	select DRIVERS_TI_TPS65913
+	select RTC
+config DRIVERS_TI_TPS65913_RTC_BUS
+	int "TI TPS65913 RTC bus"
+	depends on DRIVERS_TI_TPS65913_RTC
+	default 0
+config DRIVERS_TI_TPS65913_RTC_ADDR
+	hex "TI TPS65913 RTC chip address"
+	depends on DRIVERS_TI_TPS65913_RTC
+	default 0x00
+config DRIVER_TI_TPS65090
+	bool
+	default n
+config DRIVERS_ATI_RAGEXL
+	bool
+config DRIVER_MAXIM_MAX77686
+	bool
+	default n
+config DRIVER_PARADE_PS8640
+	bool
+	default n
+config DRIVER_PARADE_PS8625
+	bool
+	default n
+config DRIVERS_EMULATION_QEMU_BOCHS
+	bool "bochs dispi interface vga driver"
+	default y
+	depends on BOARD_EMULATION_QEMU_X86
+	depends on MAINBOARD_DO_NATIVE_VGA_INIT
+	select VGA
+config DRIVERS_EMULATION_QEMU_BOCHS_XRES
+	int "bochs vga xres"
+	default 800
+	depends on FRAMEBUFFER_KEEP_VESA_MODE
+	depends on DRIVERS_EMULATION_QEMU_BOCHS
+config DRIVERS_EMULATION_QEMU_BOCHS_YRES
+	int "bochs vga yres"
+	default 600
+	depends on FRAMEBUFFER_KEEP_VESA_MODE
+	depends on DRIVERS_EMULATION_QEMU_BOCHS
+config DRIVERS_SIL_3114
+	bool "Silicon Image SIL3114"
+	default n
+	depends on PCI
+config DRIVERS_I2C_ADM1027
+	bool
+config DRIVERS_I2C_WW_RING
+	bool
+config I2C_TPM
+	bool "I2C TPM"
+	depends on !PC80_SYSTEM # for now
+config DRIVER_TPM_I2C_BUS
+	hex "I2C TPM chip bus"
+	default 9 # FIXME, workaround for Kconfig BS
+	depends on I2C_TPM
+config DRIVER_TPM_I2C_ADDR
+	hex "I2C TPM chip address"
+	default 2 # FIXME, workaround for Kconfig BS
+	depends on I2C_TPM
+config DRIVERS_I2C_I2CMUX
+	bool
+config DRIVERS_I2C_W83793
+	bool
+config DRIVERS_I2C_RTD2132
+	bool
+	default n
+config DRIVERS_I2C_I2CMUX2
+	bool
+config DRIVERS_I2C_W83795
+	bool
+config DRIVERS_I2C_LM63
+	bool
+config DRIVERS_I2C_ADM1026
+	bool
+config DRIVERS_I2C_ADT7463
+	bool
+config DRIVERS_PS2_KEYBOARD
+	bool "PS/2 keyboard init"
+	default n
+	depends on PC80_SYSTEM
+config MAINBOARD_HAS_LPC_TPM
+	bool
+	default n
+config LPC_TPM
+	bool "Enable TPM support"
+	depends on MAINBOARD_HAS_LPC_TPM
+	default n
+config TPM_TIS_BASE_ADDRESS
+	hex
+	default 0xfed40000
+	depends on LPC_TPM
+config TPM_PIRQ
+	hex
+	default 0
+	depends on LPC_TPM
+config TPM_INIT_FAILURE_IS_FATAL
+	bool
+	default n
+	depends on LPC_TPM
+config SKIP_TPM_STARTUP_ON_NORMAL_BOOT
+	bool
+	default n
+	depends on LPC_TPM
+config TPM_DEACTIVATE
+	bool "Deactivate TPM"
+	default n
+	depends on LPC_TPM
+config DRIVERS_MC146818
+	bool
+	default y if ARCH_X86
+	depends on PC80_SYSTEM
+config DRIVERS_ASPEED_AST_COMMON
+	bool
+
+config DRIVERS_ASPEED_AST2050
+	bool
+endmenu
+config RTC
+	bool
+	default n
+config TPM
+	bool
+	default n
+	select LPC_TPM if ARCH_X86
+	select I2C_TPM if ARCH_ARM
+	select I2C_TPM if ARCH_ARM64
+config RAMTOP
+	hex
+	default 0x200000
+	depends on ARCH_X86
+config HEAP_SIZE
+	hex
+	default 0x4000
+config STACK_SIZE
+	hex
+	default 0x1000 if ARCH_X86
+	default 0x0
+config MAX_CPUS
+	int
+	default 1
+config MMCONF_SUPPORT_DEFAULT
+	bool
+	default n
+config MMCONF_SUPPORT
+	bool
+	default n
+config BOOTMODE_STRAPS
+	bool
+	default n
+menu "Console"
+config BOOTBLOCK_CONSOLE
+	bool "Enable early (bootblock) console output."
+	depends on C_ENVIRONMENT_BOOTBLOCK
+	default n
+config SQUELCH_EARLY_SMP
+	bool "Squelch AP CPUs from early console."
+	default y
+	depends on SMP
+config CONSOLE_SERIAL
+	bool
+	default n
+config SPKMODEM
+	bool "spkmodem (console on speaker) console output"
+	default n
+	depends on ARCH_X86
+config CONSOLE_USB
+	bool "USB dongle console output"
+	depends on USBDEBUG
+	default n
+config ONBOARD_VGA_IS_PRIMARY
+	bool "Use onboard VGA as primary video device"
+	default n
+	depends on PCI
+config CONSOLE_NE2K
+	bool "Network console over NE2000 compatible Ethernet adapter"
+	default n
+	depends on PCI
+config CONSOLE_NE2K_DST_MAC
+	depends on CONSOLE_NE2K
+	string "Destination MAC address of remote system"
+	default "00:13:d4:76:a2:ac"
+config CONSOLE_NE2K_DST_IP
+	depends on CONSOLE_NE2K
+	string "Destination IP of logging system"
+	default "10.0.1.27"
+config CONSOLE_NE2K_SRC_IP
+	depends on CONSOLE_NE2K
+	string "IP address of coreboot system"
+	default "10.0.1.253"
+config CONSOLE_NE2K_IO_PORT
+	depends on CONSOLE_NE2K
+	hex "NE2000 adapter fixed IO port address"
+	default 0xe00
+config CONSOLE_CBMEM
+	bool
+	default n
+
+config CONSOLE_QEMU_DEBUGCON
+	bool
+	default n
+config CONSOLE_QEMU_DEBUGCON_PORT
+	hex "QEMU debug console port"
+	depends on CONSOLE_QEMU_DEBUGCON
+	default 0x402
+config SPI_CONSOLE
+	bool "SPI debug console output"
+	depends on HAVE_SPI_CONSOLE_SUPPORT && !DEBUG_SPI_FLASH
+choice
+	prompt "Default console log level"
+	default DEFAULT_CONSOLE_LOGLEVEL_8
+config DEFAULT_CONSOLE_LOGLEVEL_8
+	bool "8: SPEW"
+config DEFAULT_CONSOLE_LOGLEVEL_7
+	bool "7: DEBUG"
+config DEFAULT_CONSOLE_LOGLEVEL_6
+	bool "6: INFO"
+config DEFAULT_CONSOLE_LOGLEVEL_5
+	bool "5: NOTICE"
+config DEFAULT_CONSOLE_LOGLEVEL_4
+	bool "4: WARNING"
+config DEFAULT_CONSOLE_LOGLEVEL_3
+	bool "3: ERR"
+config DEFAULT_CONSOLE_LOGLEVEL_2
+	bool "2: CRIT"
+config DEFAULT_CONSOLE_LOGLEVEL_1
+	bool "1: ALERT"
+config DEFAULT_CONSOLE_LOGLEVEL_0
+	bool "0: EMERG"
+endchoice
+config DEFAULT_CONSOLE_LOGLEVEL
+	int
+	default 0 if DEFAULT_CONSOLE_LOGLEVEL_0
+	default 1 if DEFAULT_CONSOLE_LOGLEVEL_1
+	default 2 if DEFAULT_CONSOLE_LOGLEVEL_2
+	default 3 if DEFAULT_CONSOLE_LOGLEVEL_3
+	default 4 if DEFAULT_CONSOLE_LOGLEVEL_4
+	default 5 if DEFAULT_CONSOLE_LOGLEVEL_5
+	default 6 if DEFAULT_CONSOLE_LOGLEVEL_6
+	default 7 if DEFAULT_CONSOLE_LOGLEVEL_7
+	default 8 if DEFAULT_CONSOLE_LOGLEVEL_8
+config NO_POST
+	bool "Don't show any POST codes"
+	default n
+config CMOS_POST
+	bool "Store post codes in CMOS for debugging"
+	depends on !NO_POST && PC80_SYSTEM
+	default n
+config CMOS_POST_OFFSET
+	hex "Offset into CMOS to store POST codes"
+	depends on CMOS_POST
+	default 0x10
+config CMOS_POST_EXTRA
+	bool "Store extra logging info into CMOS"
+	depends on CMOS_POST
+	default n
+config CONSOLE_POST
+	bool "Show POST codes on the debug console"
+	depends on !NO_POST
+	default n
+config POST_DEVICE
+	bool "Send POST codes to an external device"
+	depends on !NO_POST
+	default y
+choice
+	prompt "Device to send POST codes to"
+	depends on POST_DEVICE
+	default POST_DEVICE_NONE
+config POST_DEVICE_NONE
+	bool "None"
+config POST_DEVICE_LPC
+	bool "LPC"
+	depends on PCI
+config POST_DEVICE_PCI_PCIE
+	bool "PCI/PCIe"
+	depends on PCI
+endchoice
+config POST_IO
+	bool "Send POST codes to an IO port"
+	depends on PC80_SYSTEM && !NO_POST
+	default y
+config POST_IO_PORT
+	depends on POST_IO
+	hex "IO port for POST codes"
+	default 0x80
+config NO_EARLY_BOOTBLOCK_POSTCODES
+	def_bool n
+endmenu
+config HAVE_ACPI_RESUME
+	bool
+	default n
+config RESUME_PATH_SAME_AS_BOOT
+	bool
+	default y if ARCH_X86
+	depends on HAVE_ACPI_RESUME
+config HAVE_HARD_RESET
+	bool
+	default n
+config HAVE_ROMSTAGE_CONSOLE_SPINLOCK
+	bool
+	default n
+config HAVE_ROMSTAGE_NVRAM_CBFS_SPINLOCK
+	bool
+	default n
+config HAVE_ROMSTAGE_MICROCODE_CBFS_SPINLOCK
+	bool
+	default n
+config HAVE_MONOTONIC_TIMER
+	def_bool n
+config GENERIC_UDELAY
+	def_bool n
+	depends on HAVE_MONOTONIC_TIMER
+config TIMER_QUEUE
+	def_bool n
+	depends on HAVE_MONOTONIC_TIMER
+config COOP_MULTITASKING
+	def_bool n
+	depends on TIMER_QUEUE && ARCH_X86
+config NUM_THREADS
+	int
+	default 4
+	depends on COOP_MULTITASKING
+config HAVE_OPTION_TABLE
+	bool
+	default n
+config PIRQ_ROUTE
+	bool
+	default n
+config HAVE_SMI_HANDLER
+	bool
+	default n
+config PCI_IO_CFG_EXT
+	bool
+	default n
+config IOAPIC
+	bool
+	default n
+config CACHE_ROM_SIZE_OVERRIDE
+	hex
+	default 0
+config VIDEO_MB
+	int
+	default 0
+config USE_WATCHDOG_ON_BOOT
+	bool
+	default n
+config VGA
+	bool
+	default n
+config GFXUMA
+	bool
+	default n
+config HAVE_ACPI_TABLES
+	bool
+config HAVE_MP_TABLE
+	bool
+config HAVE_PIRQ_TABLE
+	bool
+config MAX_PIRQ_LINKS
+	int
+	default 4
+config COMMON_FADT
+	bool
+	default n
+config ACPI_NHLT
+	bool
+	default n
+config COREBOOT_TABLE_SIZE
+	hex
+	default 0x8000 if ARCH_X86
+	default 0x2000 if !ARCH_X86
+menu "System tables"
+config GENERATE_MP_TABLE
+	bool
+	default n
+config GENERATE_PIRQ_TABLE
+	bool
+	default n
+config GENERATE_SMBIOS_TABLES
+	depends on ARCH_X86
+	bool
+	default y
+config SMBIOS_PROVIDED_BY_MOBO
+	bool
+	default n
+config MAINBOARD_SERIAL_NUMBER
+	string "SMBIOS Serial Number"
+	depends on GENERATE_SMBIOS_TABLES
+	depends on !SMBIOS_PROVIDED_BY_MOBO
+	default "123456789"
+config MAINBOARD_VERSION
+	string "SMBIOS Version Number"
+	depends on GENERATE_SMBIOS_TABLES
+	depends on !SMBIOS_PROVIDED_BY_MOBO
+	default "1.0"
+config MAINBOARD_SMBIOS_MANUFACTURER
+	string "SMBIOS Manufacturer"
+	depends on GENERATE_SMBIOS_TABLES
+	depends on !SMBIOS_PROVIDED_BY_MOBO
+	default "Emulation"
+config MAINBOARD_SMBIOS_PRODUCT_NAME
+	string "SMBIOS Product name"
+	depends on GENERATE_SMBIOS_TABLES
+	depends on !SMBIOS_PROVIDED_BY_MOBO
+	default "QEMU x86 q35/ich9"
+endmenu
+menu "Payload"
+choice
+	prompt "Add a payload"
+config PAYLOAD_NONE
+	bool "None"
+config PAYLOAD_ELF
+	bool "An ELF executable payload"
+config PAYLOAD_SEABIOS
+	bool "SeaBIOS"
+	depends on ARCH_X86
+config PAYLOAD_LINUX
+	bool "A Linux payload"
+config PAYLOAD_DEPTHCHARGE
+	bool "Depthcharge"
+	depends on CHROMEOS
+config PAYLOAD_UBOOT
+	bool "U-Boot (Experimental)"
+	depends on ARCH_X86
+config PAYLOAD_GRUB2
+	bool "GRUB2"
+config PAYLOAD_FILO
+	bool "FILO"
+config PAYLOAD_TIANOCORE
+	bool "Tiano Core"
+endchoice
+
+config PXE_ROM
+	bool
+config BUILD_IPXE
+	bool
+
+choice
+	prompt "iPXE version"
+	default IPXE_STABLE
+	depends on BUILD_IPXE
+config IPXE_STABLE
+	bool "2016.2"
+config IPXE_MASTER
+	bool "master"
+endchoice
+config PXE_ROM_FILE
+	string "PXE ROM filename"
+	depends on PXE_ROM
+	default "pxe.rom"
+config PXE_ROM_ID
+	string "network card PCI IDs"
+	depends on PXE_ROM || BUILD_IPXE
+	default "10ec,8168"
+
+config PAYLOAD_FILE
+	string "Payload path and filename"
+	depends on PAYLOAD_ELF
+	default "payload.elf"
+config COMPRESSED_PAYLOAD_LZMA
+	bool "Use LZMA compression for payloads"
+	default y
+	depends on !PAYLOAD_NONE && !PAYLOAD_LINUX
+config PAYLOAD_OPTIONS
+	string
+	default ""
+config PAYLOAD_IS_FLAT_BINARY
+	def_bool n
+menu "Secondary Payloads"
+config COREINFO_SECONDARY_PAYLOAD
+	bool
+	default n
+	depends on ARCH_X86
+config MEMTEST_SECONDARY_PAYLOAD
+	bool
+	default n
+	depends on ARCH_X86
+choice
+	prompt "Memtest86+ version"
+	default MEMTEST_STABLE
+	depends on MEMTEST_SECONDARY_PAYLOAD
+config MEMTEST_STABLE
+	bool "Stable"
+config MEMTEST_MASTER
+	bool "Master"
+endchoice
+config NVRAMCUI_SECONDARY_PAYLOAD
+	bool
+	default n
+	depends on ARCH_X86
+endmenu # "Secondary Payloads"
+endmenu
+menu "Debugging"
+config GDB_STUB
+	bool "GDB debugging support"
+	default n
+	depends on CONSOLE_SERIAL
+config GDB_WAIT
+	bool "Wait for a GDB connection"
+	default n
+	depends on GDB_STUB
+config FATAL_ASSERTS
+	bool "Halt when hitting a BUG() or assertion error"
+	default n
+config DEBUG_CBFS
+	bool "Output verbose CBFS debug messages"
+	default n
+config HAVE_DEBUG_RAM_SETUP
+	def_bool n
+config DEBUG_RAM_SETUP
+	bool "Output verbose RAM init debug messages"
+	default n
+	depends on HAVE_DEBUG_RAM_SETUP
+config HAVE_DEBUG_CAR
+	def_bool n
+config DEBUG_CAR
+	def_bool n
+	depends on HAVE_DEBUG_CAR
+if DEFAULT_CONSOLE_LOGLEVEL_7 || DEFAULT_CONSOLE_LOGLEVEL_8
+config DEBUG_CAR
+	bool "Output verbose Cache-as-RAM debug messages"
+	default n
+	depends on HAVE_DEBUG_CAR
+endif
+config DEBUG_PIRQ
+	bool "Check PIRQ table consistency"
+	default n
+	depends on GENERATE_PIRQ_TABLE
+config HAVE_DEBUG_SMBUS
+	def_bool n
+config DEBUG_SMBUS
+	bool "Output verbose SMBus debug messages"
+	default n
+	depends on HAVE_DEBUG_SMBUS
+config DEBUG_SMI
+	bool "Output verbose SMI debug messages"
+	default n
+	depends on HAVE_SMI_HANDLER
+	select SPI_FLASH_SMM if SPI_CONSOLE
+config DEBUG_SMM_RELOCATION
+	bool "Debug SMM relocation code"
+	default n
+	depends on HAVE_SMI_HANDLER
+config DEBUG_MALLOC
+	bool
+	default n
+config DEBUG_ACPI
+	bool
+	default n
+config REALMODE_DEBUG
+	bool
+	default n
+	depends on PCI_OPTION_ROM_RUN_REALMODE
+config X86EMU_DEBUG
+	bool "Output verbose x86emu debug messages"
+	default n
+	depends on PCI_OPTION_ROM_RUN_YABEL
+config X86EMU_DEBUG_JMP
+	bool "Trace JMP/RETF"
+	default n
+	depends on X86EMU_DEBUG
+config X86EMU_DEBUG_TRACE
+	bool "Trace all opcodes"
+	default n
+	depends on X86EMU_DEBUG
+config X86EMU_DEBUG_PNP
+	bool "Log Plug&Play accesses"
+	default n
+	depends on X86EMU_DEBUG
+config X86EMU_DEBUG_DISK
+	bool "Log Disk I/O"
+	default n
+	depends on X86EMU_DEBUG
+config X86EMU_DEBUG_PMM
+	bool "Log PMM"
+	default n
+	depends on X86EMU_DEBUG
+config X86EMU_DEBUG_VBE
+	bool "Debug VESA BIOS Extensions"
+	default n
+	depends on X86EMU_DEBUG
+config X86EMU_DEBUG_INT10
+	bool "Redirect INT10 output to console"
+	default n
+	depends on X86EMU_DEBUG
+config X86EMU_DEBUG_INTERRUPTS
+	bool "Log intXX calls"
+	default n
+	depends on X86EMU_DEBUG
+config X86EMU_DEBUG_CHECK_VMEM_ACCESS
+	bool "Log special memory accesses"
+	default n
+	depends on X86EMU_DEBUG
+config X86EMU_DEBUG_MEM
+	bool "Log all memory accesses"
+	default n
+	depends on X86EMU_DEBUG
+config X86EMU_DEBUG_IO
+	bool "Log IO accesses"
+	default n
+	depends on X86EMU_DEBUG
+config X86EMU_DEBUG_TIMINGS
+	bool "Output timing information"
+	default n
+	depends on X86EMU_DEBUG && UDELAY_LAPIC && HAVE_MONOTONIC_TIMER
+config DEBUG_TPM
+	bool "Output verbose TPM debug messages"
+	default n
+	depends on TPM
+config DEBUG_SPI_FLASH
+	bool "Output verbose SPI flash debug messages"
+	default n
+	depends on SPI_FLASH
+config DEBUG_USBDEBUG
+	bool "Output verbose USB 2.0 EHCI debug dongle messages"
+	default n
+	depends on USBDEBUG
+config TRACE
+	bool "Trace function calls"
+	default n
+config DEBUG_COVERAGE
+	bool "Debug code coverage"
+	default n
+	depends on COVERAGE
+endmenu
+config ENABLE_APIC_EXT_ID
+	bool
+	default n
+config WARNINGS_ARE_ERRORS
+	bool
+	default y
+config IASL_WARNINGS_ARE_ERRORS
+	def_bool y
+config POWER_BUTTON_DEFAULT_ENABLE
+	def_bool n
+config POWER_BUTTON_DEFAULT_DISABLE
+	def_bool n
+config POWER_BUTTON_FORCE_ENABLE
+	def_bool n
+config POWER_BUTTON_FORCE_DISABLE
+	def_bool n
+config POWER_BUTTON_IS_OPTIONAL
+	bool
+	default y if POWER_BUTTON_DEFAULT_ENABLE || POWER_BUTTON_DEFAULT_DISABLE
+	default n if !(POWER_BUTTON_DEFAULT_ENABLE || POWER_BUTTON_DEFAULT_DISABLE)
+config REG_SCRIPT
+	bool
+	default n
+config MAX_REBOOT_CNT
+	int
+	default 3
+config CBFS_SIZE
+	hex
+	default 0x40000
+config DEBUG_BOOT_STATE
+	bool
+	default n

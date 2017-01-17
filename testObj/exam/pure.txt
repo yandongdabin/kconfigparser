@@ -1,0 +1,37 @@
+menu "MENU"
+  config CONFIG_1
+    bool "CHOICE_CONTROL"
+    default y	
+  choice
+    prompt "CHOICE"
+    depends on CONFIG_1
+    default CHOICE_1
+    config CHOICE_1
+      bool "CHOICE_1"
+    config CHOICE_2
+      bool "CHOICE_2"
+    config CHOICE_3
+      bool "CHOICE_3"
+  endchoice
+  config ANON_CONFIG
+    def_bool n
+  config BOOL_CONFIG
+    bool "BOOL_CONFIG"
+    default y
+    select ANON_CONFIG if CHOICE_1
+  config INT_CONFIG
+    int "INT_CONFIG"
+    default 6 if !CONFIG_1
+    default 10 if CONFIG_1
+    range 5 32
+    depends on BOOL_CONFIG
+  config STR_CONFIG
+    string
+    prompt "STR_CONFIG"
+    default "def_str"
+    depends on BOOL_CONFIG
+  if BOOL_CONFIG
+    config CONFIG_2
+      bool "CONFIG_2"
+  endif
+endmenu

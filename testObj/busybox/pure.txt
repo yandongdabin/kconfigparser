@@ -1,0 +1,3506 @@
+mainmenu "BusyBox Configuration"
+config HAVE_DOT_CONFIG
+	bool
+	default y
+menu "Busybox Settings"
+menu "General Configuration"
+config DESKTOP
+	bool "Enable options for full-blown desktop systems"
+	default y
+config EXTRA_COMPAT
+	bool "Provide compatible behavior for rare corner cases (bigger code)"
+	default n
+config INCLUDE_SUSv2
+	bool "Enable obsolete features removed before SUSv3"
+	default y
+config USE_PORTABLE_CODE
+	bool "Avoid using GCC-specific code constructs"
+	default n
+config PLATFORM_LINUX
+	bool "Enable Linux-specific applets and features"
+	default y
+choice
+	prompt "Buffer allocation policy"
+	default FEATURE_BUFFERS_USE_MALLOC
+config FEATURE_BUFFERS_USE_MALLOC
+	bool "Allocate with Malloc"
+config FEATURE_BUFFERS_GO_ON_STACK
+	bool "Allocate on the Stack"
+config FEATURE_BUFFERS_GO_IN_BSS
+	bool "Allocate in the .bss section"
+endchoice
+config SHOW_USAGE
+	bool "Show applet usage messages"
+	default y
+config FEATURE_VERBOSE_USAGE
+	bool "Show verbose applet usage messages"
+	default y
+	depends on SHOW_USAGE
+config FEATURE_COMPRESS_USAGE
+	bool "Store applet usage messages in compressed form"
+	default y
+	depends on SHOW_USAGE
+config FEATURE_INSTALLER
+	bool "Support --install [-s] to install applet links at runtime"
+	default y
+config INSTALL_NO_USR
+	bool "Don't use /usr"
+	default n
+config LOCALE_SUPPORT
+	bool "Enable locale support (system needs locale for this to work)"
+	default n
+config UNICODE_SUPPORT
+	bool "Support Unicode"
+	default y
+config UNICODE_USING_LOCALE
+	bool "Use libc routines for Unicode (else uses internal ones)"
+	default n
+	depends on UNICODE_SUPPORT && LOCALE_SUPPORT
+config FEATURE_CHECK_UNICODE_IN_ENV
+	bool "Check $LC_ALL, $LC_CTYPE and $LANG environment variables"
+	default n
+	depends on UNICODE_SUPPORT && !UNICODE_USING_LOCALE
+config SUBST_WCHAR
+	int "Character code to substitute unprintable characters with"
+	depends on UNICODE_SUPPORT
+	default 63
+config LAST_SUPPORTED_WCHAR
+	int "Range of supported Unicode characters"
+	depends on UNICODE_SUPPORT
+	default 767
+config UNICODE_COMBINING_WCHARS
+	bool "Allow zero-width Unicode characters on output"
+	default n
+	depends on UNICODE_SUPPORT
+config UNICODE_WIDE_WCHARS
+	bool "Allow wide Unicode characters on output"
+	default n
+	depends on UNICODE_SUPPORT
+config UNICODE_BIDI_SUPPORT
+	bool "Bidirectional character-aware line input"
+	default n
+	depends on UNICODE_SUPPORT && !UNICODE_USING_LOCALE
+config UNICODE_NEUTRAL_TABLE
+	bool "In bidi input, support non-ASCII neutral chars too"
+	default n
+	depends on UNICODE_BIDI_SUPPORT
+config UNICODE_PRESERVE_BROKEN
+	bool "Make it possible to enter sequences of chars which are not Unicode"
+	default n
+	depends on UNICODE_SUPPORT
+config PAM
+	bool "Support for PAM (Pluggable Authentication Modules)"
+	default n
+config FEATURE_USE_SENDFILE
+	bool "Use sendfile system call"
+	default y
+	select PLATFORM_LINUX
+config LONG_OPTS
+	bool "Support for --long-options"
+	default y
+config FEATURE_DEVPTS
+	bool "Use the devpts filesystem for Unix98 PTYs"
+	default y
+config FEATURE_CLEAN_UP
+	bool "Clean up all memory before exiting (usually not needed)"
+	default n
+config FEATURE_UTMP
+	bool "Support utmp file"
+	default y
+config FEATURE_WTMP
+	bool "Support wtmp file"
+	default y
+	depends on FEATURE_UTMP
+config FEATURE_PIDFILE
+	bool "Support writing pidfiles"
+	default y
+config PID_FILE_PATH
+	string "Path to directory for pidfile"
+	default "/var/run"
+	depends on FEATURE_PIDFILE
+config FEATURE_SUID
+	bool "Support for SUID/SGID handling"
+	default y
+config FEATURE_SUID_CONFIG
+	bool "Runtime SUID/SGID configuration via /etc/busybox.conf"
+	default y
+	depends on FEATURE_SUID
+config FEATURE_SUID_CONFIG_QUIET
+	bool "Suppress warning message if /etc/busybox.conf is not readable"
+	default y
+	depends on FEATURE_SUID_CONFIG
+config SELINUX
+	bool "Support NSA Security Enhanced Linux"
+	default n
+	select PLATFORM_LINUX
+config FEATURE_PREFER_APPLETS
+	bool "exec prefers applets"
+	default n
+config BUSYBOX_EXEC_PATH
+	string "Path to BusyBox executable"
+	default "/proc/self/exe"
+config FEATURE_SYSLOG
+	bool #No description makes it a hidden option
+	default n
+config FEATURE_HAVE_RPC
+	bool #No description makes it a hidden option
+	default n
+endmenu
+menu 'Build Options'
+config STATIC
+	bool "Build BusyBox as a static binary (no shared libs)"
+	default n
+config PIE
+	bool "Build BusyBox as a position independent executable"
+	default n
+	depends on !STATIC
+config NOMMU
+	bool "Force NOMMU build"
+	default n
+config BUILD_LIBBUSYBOX
+	bool "Build shared libbusybox"
+	default n
+	depends on !FEATURE_PREFER_APPLETS && !PIE && !STATIC
+config FEATURE_INDIVIDUAL
+	bool "Produce a binary for each applet, linked against libbusybox"
+	default y
+	depends on BUILD_LIBBUSYBOX
+config FEATURE_SHARED_BUSYBOX
+	bool "Produce additional busybox binary linked against libbusybox"
+	default y
+	depends on BUILD_LIBBUSYBOX
+config LFS
+	bool "Build with Large File Support (for accessing files > 2 GB)"
+	default y
+config CROSS_COMPILER_PREFIX
+	string "Cross Compiler prefix"
+	default ""
+config SYSROOT
+	string "Path to sysroot"
+	default ""
+config EXTRA_CFLAGS
+	string "Additional CFLAGS"
+	default ""
+config EXTRA_LDFLAGS
+	string "Additional LDFLAGS"
+	default ""
+config EXTRA_LDLIBS
+	string "Additional LDLIBS"
+	default ""
+endmenu
+menu 'Debugging Options'
+config DEBUG
+	bool "Build BusyBox with extra Debugging symbols"
+	default n
+config DEBUG_PESSIMIZE
+	bool "Disable compiler optimizations"
+	default n
+	depends on DEBUG
+config UNIT_TEST
+	bool "Build unit tests"
+	default n
+config WERROR
+	bool "Abort compilation on any warning"
+	default n
+choice
+	prompt "Additional debugging library"
+	default NO_DEBUG_LIB
+config NO_DEBUG_LIB
+	bool "None"
+config DMALLOC
+	bool "Dmalloc"
+config EFENCE
+	bool "Electric-fence"
+endchoice
+endmenu
+menu 'Installation Options ("make install" behavior)'
+choice
+	prompt "What kind of applet links to install"
+	default INSTALL_APPLET_SYMLINKS
+config INSTALL_APPLET_SYMLINKS
+	bool "as soft-links"
+config INSTALL_APPLET_HARDLINKS
+	bool "as hard-links"
+config INSTALL_APPLET_SCRIPT_WRAPPERS
+	bool "as script wrappers"
+config INSTALL_APPLET_DONT
+	bool "not installed"
+endchoice
+choice
+	prompt "/bin/sh applet link"
+	default INSTALL_SH_APPLET_SYMLINK
+	depends on INSTALL_APPLET_SCRIPT_WRAPPERS
+config INSTALL_SH_APPLET_SYMLINK
+	bool "as soft-link"
+config INSTALL_SH_APPLET_HARDLINK
+	bool "as hard-link"
+config INSTALL_SH_APPLET_SCRIPT_WRAPPER
+	bool "as script wrapper"
+endchoice
+config PREFIX
+	string "BusyBox installation prefix"
+	default "./_install"
+endmenu
+menu "Busybox Library Tuning"
+config FEATURE_SYSTEMD
+	bool "Enable systemd support"
+	default y
+config FEATURE_RTMINMAX
+	bool "Support RTMIN[+n] and RTMAX[-n] signal names"
+	default y
+config PASSWORD_MINLEN
+	int "Minimum password length"
+	default 6
+	range 5 32
+config MD5_SMALL
+	int "MD5: Trade bytes for speed (0:fast, 3:slow)"
+	default 1
+	range 0 3
+config SHA3_SMALL
+	int "SHA3: Trade bytes for speed (0:fast, 1:slow)"
+	default 1
+	range 0 1
+config FEATURE_FAST_TOP
+	bool "Faster /proc scanning code (+100 bytes)"
+	default y
+config FEATURE_ETC_NETWORKS
+	bool "Support for /etc/networks"
+	default n
+config FEATURE_USE_TERMIOS
+	bool "Use termios to manipulate the screen"
+	default y
+	depends on MORE || TOP || POWERTOP
+config FEATURE_EDITING
+	bool "Command line editing"
+	default y
+config FEATURE_EDITING_MAX_LEN
+	int "Maximum length of input"
+	range 128 8192
+	default 1024
+	depends on FEATURE_EDITING
+config FEATURE_EDITING_VI
+	bool "vi-style line editing commands"
+	default n
+	depends on FEATURE_EDITING
+config FEATURE_EDITING_HISTORY
+	int "History size"
+	range 0 9999
+	default 255
+	depends on FEATURE_EDITING
+config FEATURE_EDITING_SAVEHISTORY
+	bool "History saving"
+	default y
+	depends on FEATURE_EDITING
+config FEATURE_EDITING_SAVE_ON_EXIT
+	bool "Save history on shell exit, not after every command"
+	default n
+	depends on FEATURE_EDITING_SAVEHISTORY
+config FEATURE_REVERSE_SEARCH
+	bool "Reverse history search"
+	default y
+	depends on FEATURE_EDITING_SAVEHISTORY
+config FEATURE_TAB_COMPLETION
+	bool "Tab completion"
+	default y
+	depends on FEATURE_EDITING
+config FEATURE_USERNAME_COMPLETION
+	bool "Username completion"
+	default n
+	depends on FEATURE_TAB_COMPLETION
+config FEATURE_EDITING_FANCY_PROMPT
+	bool "Fancy shell prompts"
+	default y
+	depends on FEATURE_EDITING
+config FEATURE_EDITING_ASK_TERMINAL
+	bool "Query cursor position from terminal"
+	default n
+	depends on FEATURE_EDITING
+config FEATURE_NON_POSIX_CP
+	bool "Non-POSIX, but safer, copying to special nodes"
+	default y
+config FEATURE_VERBOSE_CP_MESSAGE
+	bool "Give more precise messages when copy fails (cp, mv etc)"
+	default n
+config FEATURE_COPYBUF_KB
+	int "Copy buffer size, in kilobytes"
+	range 1 1024
+	default 4
+config FEATURE_SKIP_ROOTFS
+	bool "Skip rootfs in mount table"
+	default y
+config MONOTONIC_SYSCALL
+	bool "Use clock_gettime(CLOCK_MONOTONIC) syscall"
+	default n
+	select PLATFORM_LINUX
+config IOCTL_HEX2STR_ERROR
+	bool "Use ioctl names rather than hex values in error messages"
+	default y
+config FEATURE_HWIB
+	bool "Support infiniband HW"
+	default y
+endmenu
+endmenu
+comment "Applets"
+menu "Archival Utilities"
+config FEATURE_SEAMLESS_XZ
+	bool "Make tar, rpm, modprobe etc understand .xz data"
+	default y
+config FEATURE_SEAMLESS_LZMA
+	bool "Make tar, rpm, modprobe etc understand .lzma data"
+	default y
+config FEATURE_SEAMLESS_BZ2
+	bool "Make tar, rpm, modprobe etc understand .bz2 data"
+	default y
+config FEATURE_SEAMLESS_GZ
+	bool "Make tar, rpm, modprobe etc understand .gz data"
+	default y
+config FEATURE_SEAMLESS_Z
+	bool "tar, rpm, modprobe etc understand .Z data"
+	default n
+config AR
+	bool "ar"
+	default n  # needs to be improved to be able to replace binutils ar
+config FEATURE_AR_LONG_FILENAMES
+	bool "Support for long filenames (not needed for debs)"
+	default y
+	depends on AR
+config FEATURE_AR_CREATE
+	bool "Support archive creation"
+	default y
+	depends on AR
+config UNCOMPRESS
+	bool "uncompress"
+	default n
+config GUNZIP
+	bool "gunzip"
+	default y
+config BUNZIP2
+	bool "bunzip2"
+	default y
+config UNLZMA
+	bool "unlzma"
+	default y
+config FEATURE_LZMA_FAST
+	bool "Optimize unlzma for speed"
+	default n
+	depends on UNLZMA
+config LZMA
+	bool "Provide lzma alias which supports only unpacking"
+	default y
+	depends on UNLZMA
+config UNXZ
+	bool "unxz"
+	default y
+config XZ
+	bool "Provide xz alias which supports only unpacking"
+	default y
+	depends on UNXZ
+config BZIP2
+	bool "bzip2"
+	default y
+config CPIO
+	bool "cpio"
+	default y
+config FEATURE_CPIO_O
+	bool "Support for archive creation"
+	default y
+	depends on CPIO
+config FEATURE_CPIO_P
+	bool "Support for passthrough mode"
+	default y
+	depends on FEATURE_CPIO_O
+config DPKG
+	bool "dpkg"
+	default n
+	select FEATURE_SEAMLESS_GZ
+config DPKG_DEB
+	bool "dpkg_deb"
+	default n
+	select FEATURE_SEAMLESS_GZ
+config FEATURE_DPKG_DEB_EXTRACT_ONLY
+	bool "Extract only (-x)"
+	default n
+	depends on DPKG_DEB
+config GZIP
+	bool "gzip"
+	default y
+config FEATURE_GZIP_LONG_OPTIONS
+	bool "Enable long options"
+	default y
+	depends on GZIP && LONG_OPTS
+config GZIP_FAST
+	int "Trade memory for gzip speed (0:small,slow - 2:fast,big)"
+	default 0
+	range 0 2
+	depends on GZIP
+config FEATURE_GZIP_LEVELS
+	bool "Enable compression levels"
+	default n
+	depends on GZIP
+config LZOP
+	bool "lzop"
+	default y
+config LZOP_COMPR_HIGH
+	bool "lzop compression levels 7,8,9 (not very useful)"
+	default n
+	depends on LZOP
+config RPM
+	bool "rpm"
+	default y
+config RPM2CPIO
+	bool "rpm2cpio"
+	default y
+config TAR
+	bool "tar"
+	default y
+config FEATURE_TAR_CREATE
+	bool "Enable archive creation"
+	default y
+	depends on TAR
+config FEATURE_TAR_AUTODETECT
+	bool "Autodetect compressed tarballs"
+	default y
+	depends on TAR && (FEATURE_SEAMLESS_Z || FEATURE_SEAMLESS_GZ || FEATURE_SEAMLESS_BZ2 || FEATURE_SEAMLESS_LZMA || FEATURE_SEAMLESS_XZ)
+config FEATURE_TAR_FROM
+	bool "Enable -X (exclude from) and -T (include from) options)"
+	default y
+	depends on TAR
+config FEATURE_TAR_OLDGNU_COMPATIBILITY
+	bool "Support for old tar header format"
+	default y
+	depends on TAR || DPKG
+config FEATURE_TAR_OLDSUN_COMPATIBILITY
+	bool "Enable untarring of tarballs with checksums produced by buggy Sun tar"
+	default y
+	depends on TAR || DPKG
+config FEATURE_TAR_GNU_EXTENSIONS
+	bool "Support for GNU tar extensions (long filenames)"
+	default y
+	depends on TAR || DPKG
+config FEATURE_TAR_LONG_OPTIONS
+	bool "Enable long options"
+	default y
+	depends on TAR && LONG_OPTS
+config FEATURE_TAR_TO_COMMAND
+	bool "Support for writing to an external program"
+	default y
+	depends on TAR && FEATURE_TAR_LONG_OPTIONS
+config FEATURE_TAR_UNAME_GNAME
+	bool "Enable use of user and group names"
+	default y
+	depends on TAR
+config FEATURE_TAR_NOPRESERVE_TIME
+	bool "Enable -m (do not preserve time) option"
+	default y
+	depends on TAR
+config FEATURE_TAR_SELINUX
+	bool "Support for extracting SELinux labels"
+	default n
+	depends on TAR && SELINUX
+config UNZIP
+	bool "unzip"
+	default y
+endmenu
+menu "Coreutils"
+config BASENAME
+	bool "basename"
+	default y
+config CAT
+	bool "cat"
+	default y
+config DATE
+	bool "date"
+	default y
+config FEATURE_DATE_ISOFMT
+	bool "Enable ISO date format output (-I)"
+	default y
+	depends on DATE
+config FEATURE_DATE_NANO
+	bool "Support %[num]N nanosecond format specifier"
+	default n
+	depends on DATE  # syscall(__NR_clock_gettime)
+	select PLATFORM_LINUX
+config FEATURE_DATE_COMPAT
+	bool "Support weird 'date MMDDhhmm[[YY]YY][.ss]' format"
+	default y
+	depends on DATE
+config DD
+	bool "dd"
+	default y
+config FEATURE_DD_SIGNAL_HANDLING
+	bool "Enable signal handling for status reporting"
+	default y
+	depends on DD
+config FEATURE_DD_THIRD_STATUS_LINE
+	bool "Enable the third status line upon signal"
+	default y
+	depends on DD && FEATURE_DD_SIGNAL_HANDLING
+config FEATURE_DD_IBS_OBS
+	bool "Enable ibs, obs and conv options"
+	default y
+	depends on DD
+config FEATURE_DD_STATUS
+	bool "Enable status display options"
+	default y
+	depends on DD
+config HOSTID
+	bool "hostid"
+	default y
+config ID
+	bool "id"
+	default y
+config GROUPS
+	bool "groups"
+	default y
+config SHUF
+	bool "shuf"
+	default y
+config SYNC
+	bool "sync"
+	default y
+config FEATURE_SYNC_FANCY
+	bool "Enable -d and -f flags (requres syncfs(2) in libc)"
+	default y
+	depends on SYNC
+config TEST
+	bool "test"
+	default y
+config FEATURE_TEST_64
+	bool "Extend test to 64 bit"
+	default y
+	depends on TEST || ASH_BUILTIN_TEST || HUSH
+config TOUCH
+	bool "touch"
+	default y
+config FEATURE_TOUCH_NODEREF
+	bool "Add support for -h"
+	default y
+	depends on TOUCH
+config FEATURE_TOUCH_SUSV3
+	bool "Add support for SUSV3 features (-d -t -r)"
+	default y
+	depends on TOUCH
+config TR
+	bool "tr"
+	default y
+config FEATURE_TR_CLASSES
+	bool "Enable character classes (such as [:upper:])"
+	default y
+	depends on TR
+config FEATURE_TR_EQUIV
+	bool "Enable equivalence classes"
+	default y
+	depends on TR
+config TRUNCATE
+	bool "truncate"
+	default y
+config UNLINK
+	bool "unlink"
+	default y
+config BASE64
+	bool "base64"
+	default y
+config WHO
+      bool "who"
+      default y
+      depends on FEATURE_UTMP
+config USERS
+      bool "users"
+      default y
+      depends on FEATURE_UTMP
+config CAL
+	bool "cal"
+	default y
+config CATV
+	bool "catv"
+	default y
+config CHGRP
+	bool "chgrp"
+	default y
+config CHMOD
+	bool "chmod"
+	default y
+config CHOWN
+	bool "chown"
+	default y
+config FEATURE_CHOWN_LONG_OPTIONS
+	bool "Enable long options"
+	default y
+	depends on CHOWN && LONG_OPTS
+config CHROOT
+	bool "chroot"
+	default y
+config CKSUM
+	bool "cksum"
+	default y
+config COMM
+	bool "comm"
+	default y
+config CP
+	bool "cp"
+	default y
+config FEATURE_CP_LONG_OPTIONS
+	bool "Enable long options for cp"
+	default y
+	depends on CP && LONG_OPTS
+config CUT
+	bool "cut"
+	default y
+config DF
+	bool "df"
+	default y
+config FEATURE_DF_FANCY
+	bool "Enable -a, -i, -B"
+	default y
+	depends on DF
+config DIRNAME
+	bool "dirname"
+	default y
+config DOS2UNIX
+	bool "dos2unix/unix2dos"
+	default y
+config UNIX2DOS
+	bool
+	default y
+	depends on DOS2UNIX
+config DU
+	bool "du (default blocksize of 512 bytes)"
+	default y
+config FEATURE_DU_DEFAULT_BLOCKSIZE_1K
+	bool "Use a default blocksize of 1024 bytes (1K)"
+	default y
+	depends on DU
+config ECHO
+	bool "echo (basic SuSv3 version taking no options)"
+	default y
+config FEATURE_FANCY_ECHO
+	bool "Enable echo options (-n and -e)"
+	default y
+	depends on ECHO || ASH_BUILTIN_ECHO || HUSH
+config ENV
+	bool "env"
+	default y
+config FEATURE_ENV_LONG_OPTIONS
+	bool "Enable long options"
+	default y
+	depends on ENV && LONG_OPTS
+config EXPAND
+	bool "expand"
+	default y
+config FEATURE_EXPAND_LONG_OPTIONS
+	bool "Enable long options"
+	default y
+	depends on EXPAND && LONG_OPTS
+config EXPR
+	bool "expr"
+	default y
+config EXPR_MATH_SUPPORT_64
+	bool "Extend Posix numbers support to 64 bit"
+	default y
+	depends on EXPR
+config FALSE
+	bool "false"
+	default y
+config FOLD
+	bool "fold"
+	default y
+config FSYNC
+	bool "fsync"
+	default y
+config HEAD
+	bool "head"
+	default y
+config FEATURE_FANCY_HEAD
+	bool "Enable head options (-c, -q, and -v)"
+	default y
+	depends on HEAD
+config INSTALL
+	bool "install"
+	default y
+config FEATURE_INSTALL_LONG_OPTIONS
+	bool "Enable long options"
+	default y
+	depends on INSTALL && LONG_OPTS
+config LN
+	bool "ln"
+	default y
+config LOGNAME
+	bool "logname"
+	default y
+config LS
+	bool "ls"
+	default y
+config FEATURE_LS_FILETYPES
+	bool "Enable filetyping options (-p and -F)"
+	default y
+	depends on LS
+config FEATURE_LS_FOLLOWLINKS
+	bool "Enable symlinks dereferencing (-L)"
+	default y
+	depends on LS
+config FEATURE_LS_RECURSIVE
+	bool "Enable recursion (-R)"
+	default y
+	depends on LS
+config FEATURE_LS_SORTFILES
+	bool "Sort the file names"
+	default y
+	depends on LS
+config FEATURE_LS_TIMESTAMPS
+	bool "Show file timestamps"
+	default y
+	depends on LS
+config FEATURE_LS_USERNAME
+	bool "Show username/groupnames"
+	default y
+	depends on LS
+config FEATURE_LS_COLOR
+	bool "Allow use of color to identify file types"
+	default y
+	depends on LS && LONG_OPTS
+config FEATURE_LS_COLOR_IS_DEFAULT
+	bool "Produce colored ls output by default"
+	default y
+	depends on FEATURE_LS_COLOR
+config MD5SUM
+	bool "md5sum"
+	default y
+config MKDIR
+	bool "mkdir"
+	default y
+config FEATURE_MKDIR_LONG_OPTIONS
+	bool "Enable long options"
+	default y
+	depends on MKDIR && LONG_OPTS
+config MKFIFO
+	bool "mkfifo"
+	default y
+config MKNOD
+	bool "mknod"
+	default y
+config MV
+	bool "mv"
+	default y
+config FEATURE_MV_LONG_OPTIONS
+	bool "Enable long options"
+	default y
+	depends on MV && LONG_OPTS
+config NICE
+	bool "nice"
+	default y
+config NOHUP
+	bool "nohup"
+	default y
+config OD
+	bool "od"
+	default y
+config PRINTENV
+	bool "printenv"
+	default y
+config PRINTF
+	bool "printf"
+	default y
+config PWD
+	bool "pwd"
+	default y
+config READLINK
+	bool "readlink"
+	default y
+config FEATURE_READLINK_FOLLOW
+	bool "Enable canonicalization by following all symlinks (-f)"
+	default y
+	depends on READLINK
+config REALPATH
+	bool "realpath"
+	default y
+config RM
+	bool "rm"
+	default y
+config RMDIR
+	bool "rmdir"
+	default y
+config FEATURE_RMDIR_LONG_OPTIONS
+	bool "Enable long options"
+	default y
+	depends on RMDIR && LONG_OPTS
+config SEQ
+	bool "seq"
+	default y
+config SHA1SUM
+	bool "sha1sum"
+	default y
+config SHA256SUM
+	bool "sha256sum"
+	default y
+config SHA512SUM
+	bool "sha512sum"
+	default y
+config SHA3SUM
+	bool "sha3sum"
+	default y
+config SLEEP
+	bool "sleep"
+	default y
+config FEATURE_FANCY_SLEEP
+	bool "Enable multiple arguments and s/m/h/d suffixes"
+	default y
+	depends on SLEEP
+config FEATURE_FLOAT_SLEEP
+	bool "Enable fractional arguments"
+	default y
+	depends on FEATURE_FANCY_SLEEP
+config SORT
+	bool "sort"
+	default y
+config FEATURE_SORT_BIG
+	bool "Full SuSv3 compliant sort (support -ktcsbdfiozgM)"
+	default y
+	depends on SORT
+config SPLIT
+	bool "split"
+	default y
+config FEATURE_SPLIT_FANCY
+	bool "Fancy extensions"
+	default y
+	depends on SPLIT
+config STAT
+	bool "stat"
+	default y
+	select PLATFORM_LINUX # statfs()
+config FEATURE_STAT_FORMAT
+	bool "Enable custom formats (-c)"
+	default y
+	depends on STAT
+config STTY
+	bool "stty"
+	default y
+config SUM
+	bool "sum"
+	default y
+config TAC
+	bool "tac"
+	default y
+config TAIL
+	bool "tail"
+	default y
+config FEATURE_FANCY_TAIL
+	bool "Enable extra tail options (-q, -s, -v, and -F)"
+	default y
+	depends on TAIL
+config TEE
+	bool "tee"
+	default y
+config FEATURE_TEE_USE_BLOCK_IO
+	bool "Enable block I/O (larger/faster) instead of byte I/O"
+	default y
+	depends on TEE
+config TRUE
+	bool "true"
+	default y
+config TTY
+	bool "tty"
+	default y
+config UNAME
+	bool "uname"
+	default y
+config UNAME_OSNAME
+	string "Operating system name"
+	default "GNU/Linux"
+	depends on UNAME
+config UNEXPAND
+	bool "unexpand"
+	default y
+config FEATURE_UNEXPAND_LONG_OPTIONS
+	bool "Enable long options"
+	default y
+	depends on UNEXPAND && LONG_OPTS
+config UNIQ
+	bool "uniq"
+	default y
+config USLEEP
+	bool "usleep"
+	default y
+config UUDECODE
+	bool "uudecode"
+	default y
+config UUENCODE
+	bool "uuencode"
+	default y
+config WC
+	bool "wc"
+	default y
+config FEATURE_WC_LARGE
+	bool "Support very large files in wc"
+	default y
+	depends on WC
+config WHOAMI
+	bool "whoami"
+	default y
+config YES
+	bool "yes"
+	default y
+config FEATURE_VERBOSE
+	bool "Support verbose options (usually -v) for various applets"
+	default y
+config FEATURE_PRESERVE_HARDLINKS
+	bool "Preserve hard links"
+	default y
+	depends on CP || MV
+config FEATURE_AUTOWIDTH
+	bool "Calculate terminal & column widths"
+	default y
+	depends on LS || MORE || TELNET
+config FEATURE_HUMAN_READABLE
+	bool "Support for human readable output (example 13k, 23M, 235G)"
+	default y
+	depends on DF || DU || LS
+config FEATURE_MD5_SHA1_SUM_CHECK
+	bool "Enable -c, -s and -w options"
+	default y
+	depends on MD5SUM || SHA1SUM || SHA256SUM || SHA512SUM || SHA3SUM
+endmenu
+menu "Console Utilities"
+config CHVT
+	bool "chvt"
+	default y
+	select PLATFORM_LINUX
+config FGCONSOLE
+	bool "fgconsole"
+	default y
+	select PLATFORM_LINUX
+config CLEAR
+	bool "clear"
+	default y
+config DEALLOCVT
+	bool "deallocvt"
+	default y
+	select PLATFORM_LINUX
+config DUMPKMAP
+	bool "dumpkmap"
+	default y
+	select PLATFORM_LINUX
+config KBD_MODE
+	bool "kbd_mode"
+	default y
+	select PLATFORM_LINUX
+config LOADFONT
+	bool "loadfont"
+	default y
+	select PLATFORM_LINUX
+config LOADKMAP
+	bool "loadkmap"
+	default y
+	select PLATFORM_LINUX
+config OPENVT
+	bool "openvt"
+	default y
+	select PLATFORM_LINUX
+config RESET
+	bool "reset"
+	default y
+config RESIZE
+	bool "resize"
+	default y
+config FEATURE_RESIZE_PRINT
+	bool "Print environment variables"
+	default y
+	depends on RESIZE
+config SETCONSOLE
+	bool "setconsole"
+	default y
+	select PLATFORM_LINUX
+config FEATURE_SETCONSOLE_LONG_OPTIONS
+	bool "Enable long options"
+	default y
+	depends on SETCONSOLE && LONG_OPTS
+config SETFONT
+	bool "setfont"
+	default y
+	select PLATFORM_LINUX
+config FEATURE_SETFONT_TEXTUAL_MAP
+	bool "Support reading textual screen maps"
+	default y
+	depends on SETFONT
+config DEFAULT_SETFONT_DIR
+	string "Default directory for console-tools files"
+	default ""
+	depends on SETFONT
+config SETKEYCODES
+	bool "setkeycodes"
+	default y
+	select PLATFORM_LINUX
+config SETLOGCONS
+	bool "setlogcons"
+	default y
+	select PLATFORM_LINUX
+config SHOWKEY
+	bool "showkey"
+	default y
+	select PLATFORM_LINUX
+config FEATURE_LOADFONT_PSF2
+	bool "Support for PSF2 console fonts"
+	default y
+	depends on LOADFONT || SETFONT
+config FEATURE_LOADFONT_RAW
+	bool "Support for old (raw) console fonts"
+	default y
+	depends on LOADFONT || SETFONT
+endmenu
+menu "Debian Utilities"
+config MKTEMP
+	bool "mktemp"
+	default y
+config PIPE_PROGRESS
+	bool "pipe_progress"
+	default y
+config RUN_PARTS
+	bool "run-parts"
+	default y
+config FEATURE_RUN_PARTS_LONG_OPTIONS
+	bool "Enable long options"
+	default y
+	depends on RUN_PARTS && LONG_OPTS
+config FEATURE_RUN_PARTS_FANCY
+	bool "Support additional arguments"
+	default y
+	depends on RUN_PARTS
+config START_STOP_DAEMON
+	bool "start-stop-daemon"
+	default y
+config FEATURE_START_STOP_DAEMON_FANCY
+	bool "Support additional arguments"
+	default y
+	depends on START_STOP_DAEMON
+config FEATURE_START_STOP_DAEMON_LONG_OPTIONS
+	bool "Enable long options"
+	default y
+	depends on START_STOP_DAEMON && LONG_OPTS
+config WHICH
+	bool "which"
+	default y
+endmenu
+menu "Editors"
+config AWK
+	bool "awk"
+	default y
+config FEATURE_AWK_LIBM
+	bool "Enable math functions (requires libm)"
+	default y
+	depends on AWK
+config FEATURE_AWK_GNU_EXTENSIONS
+	bool "Enable a few GNU extensions"
+	default y
+	depends on AWK
+config CMP
+	bool "cmp"
+	default y
+config DIFF
+	bool "diff"
+	default y
+config FEATURE_DIFF_LONG_OPTIONS
+	bool "Enable long options"
+	default y
+	depends on DIFF && LONG_OPTS
+config FEATURE_DIFF_DIR
+	bool "Enable directory support"
+	default y
+	depends on DIFF
+config ED
+	bool "ed"
+	default y
+config PATCH
+	bool "patch"
+	default y
+config SED
+	bool "sed"
+	default y
+config VI
+	bool "vi"
+	default y
+config FEATURE_VI_MAX_LEN
+	int "Maximum screen width in vi"
+	range 256 16384
+	default 4096
+	depends on VI
+config FEATURE_VI_8BIT
+	bool "Allow vi to display 8-bit chars (otherwise shows dots)"
+	default n
+	depends on VI
+config FEATURE_VI_COLON
+	bool "Enable \":\" colon commands (no \"ex\" mode)"
+	default y
+	depends on VI
+config FEATURE_VI_YANKMARK
+	bool "Enable yank/put commands and mark cmds"
+	default y
+	depends on VI
+config FEATURE_VI_SEARCH
+	bool "Enable search and replace cmds"
+	default y
+	depends on VI
+config FEATURE_VI_REGEX_SEARCH
+	bool "Enable regex in search and replace"
+	default n   # Uses GNU regex, which may be unavailable. FIXME
+	depends on FEATURE_VI_SEARCH
+config FEATURE_VI_USE_SIGNALS
+	bool "Catch signals"
+	default y
+	depends on VI
+config FEATURE_VI_DOT_CMD
+	bool "Remember previous cmd and \".\" cmd"
+	default y
+	depends on VI
+config FEATURE_VI_READONLY
+	bool "Enable -R option and \"view\" mode"
+	default y
+	depends on VI
+config FEATURE_VI_SETOPTS
+	bool "Enable set-able options, ai ic showmatch"
+	default y
+	depends on VI
+config FEATURE_VI_SET
+	bool "Support for :set"
+	default y
+	depends on VI
+config FEATURE_VI_WIN_RESIZE
+	bool "Handle window resize"
+	default y
+	depends on VI
+config FEATURE_VI_ASK_TERMINAL
+	bool "Use 'tell me cursor position' ESC sequence to measure window"
+	default y
+	depends on VI
+config FEATURE_VI_UNDO
+	bool "Support undo command 'u'"
+	default y
+	depends on VI
+config FEATURE_VI_UNDO_QUEUE
+	bool "Enable undo operation queuing"
+	default y
+	depends on FEATURE_VI_UNDO
+config FEATURE_VI_UNDO_QUEUE_MAX
+	int "Maximum undo character queue size"
+	default 256
+	range 32 65536
+	depends on FEATURE_VI_UNDO_QUEUE
+config FEATURE_ALLOW_EXEC
+	bool "Allow vi and awk to execute shell commands"
+	default y
+	depends on VI || AWK
+endmenu
+menu "Finding Utilities"
+config FIND
+	bool "find"
+	default y
+config FEATURE_FIND_PRINT0
+	bool "Enable -print0: NUL-terminated output"
+	default y
+	depends on FIND
+config FEATURE_FIND_MTIME
+	bool "Enable -mtime: modified time matching"
+	default y
+	depends on FIND
+config FEATURE_FIND_MMIN
+	bool "Enable -mmin: modified time matching by minutes"
+	default y
+	depends on FIND
+config FEATURE_FIND_PERM
+	bool "Enable -perm: permissions matching"
+	default y
+	depends on FIND
+config FEATURE_FIND_TYPE
+	bool "Enable -type: file type matching (file/dir/link/...)"
+	default y
+	depends on FIND
+config FEATURE_FIND_XDEV
+	bool "Enable -xdev: 'stay in filesystem'"
+	default y
+	depends on FIND
+config FEATURE_FIND_MAXDEPTH
+	bool "Enable -mindepth N and -maxdepth N"
+	default y
+	depends on FIND
+config FEATURE_FIND_NEWER
+	bool "Enable -newer: compare file modification times"
+	default y
+	depends on FIND
+config FEATURE_FIND_INUM
+	bool "Enable -inum: inode number matching"
+	default y
+	depends on FIND
+config FEATURE_FIND_EXEC
+	bool "Enable -exec: execute commands"
+	default y
+	depends on FIND
+config FEATURE_FIND_EXEC_PLUS
+	bool "Enable -exec ... {} +"
+	default y
+	depends on FEATURE_FIND_EXEC
+config FEATURE_FIND_USER
+	bool "Enable -user: username/uid matching"
+	default y
+	depends on FIND
+config FEATURE_FIND_GROUP
+	bool "Enable -group: group/gid matching"
+	default y
+	depends on FIND
+config FEATURE_FIND_NOT
+	bool "Enable the 'not' (!) operator"
+	default y
+	depends on FIND
+config FEATURE_FIND_DEPTH
+	bool "Enable -depth"
+	default y
+	depends on FIND
+config FEATURE_FIND_PAREN
+	bool "Enable parens in options"
+	default y
+	depends on FIND
+config FEATURE_FIND_SIZE
+	bool "Enable -size: file size matching"
+	default y
+	depends on FIND
+config FEATURE_FIND_PRUNE
+	bool "Enable -prune: exclude subdirectories"
+	default y
+	depends on FIND
+config FEATURE_FIND_DELETE
+	bool "Enable -delete: delete files/dirs"
+	default y
+	depends on FIND && FEATURE_FIND_DEPTH
+config FEATURE_FIND_PATH
+	bool "Enable -path: match pathname with shell pattern"
+	default y
+	depends on FIND
+config FEATURE_FIND_REGEX
+	bool "Enable -regex: match pathname with regex"
+	default y
+	depends on FIND
+config FEATURE_FIND_CONTEXT
+	bool "Enable -context: security context matching"
+	default n
+	depends on FIND && SELINUX
+config FEATURE_FIND_LINKS
+	bool "Enable -links: link count matching"
+	default y
+	depends on FIND
+config GREP
+	bool "grep"
+	default y
+config FEATURE_GREP_EGREP_ALIAS
+	bool "Enable extended regular expressions (egrep & grep -E)"
+	default y
+	depends on GREP
+config FEATURE_GREP_FGREP_ALIAS
+	bool "Alias fgrep to grep -F"
+	default y
+	depends on GREP
+config FEATURE_GREP_CONTEXT
+	bool "Enable before and after context flags (-A, -B and -C)"
+	default y
+	depends on GREP
+config XARGS
+	bool "xargs"
+	default y
+config FEATURE_XARGS_SUPPORT_CONFIRMATION
+	bool "Enable -p: prompt and confirmation"
+	default y
+	depends on XARGS
+config FEATURE_XARGS_SUPPORT_QUOTES
+	bool "Enable single and double quotes and backslash"
+	default y
+	depends on XARGS
+config FEATURE_XARGS_SUPPORT_TERMOPT
+	bool "Enable -x: exit if -s or -n is exceeded"
+	default y
+	depends on XARGS
+config FEATURE_XARGS_SUPPORT_ZERO_TERM
+	bool "Enable -0: NUL-terminated input"
+	default y
+	depends on XARGS
+config FEATURE_XARGS_SUPPORT_REPL_STR
+	bool "Enable -I STR: string to replace"
+	default y
+	depends on XARGS
+endmenu
+menu "Init Utilities"
+config BOOTCHARTD
+	bool "bootchartd"
+	default y
+config FEATURE_BOOTCHARTD_BLOATED_HEADER
+	bool "Compatible, bloated header"
+	default y
+	depends on BOOTCHARTD
+config FEATURE_BOOTCHARTD_CONFIG_FILE
+	bool "Support bootchartd.conf"
+	default y
+	depends on BOOTCHARTD
+config HALT
+	bool "poweroff, halt, and reboot"
+	default y
+config FEATURE_CALL_TELINIT
+	bool "Call telinit on shutdown and reboot"
+	default y
+	depends on HALT && !INIT
+config TELINIT_PATH
+	string "Path to telinit executable"
+	default "/sbin/telinit"
+	depends on FEATURE_CALL_TELINIT
+config INIT
+	bool "init"
+	default y
+	select FEATURE_SYSLOG
+config FEATURE_USE_INITTAB
+	bool "Support reading an inittab file"
+	default y
+	depends on INIT
+config FEATURE_KILL_REMOVED
+	bool "Support killing processes that have been removed from inittab"
+	default n
+	depends on FEATURE_USE_INITTAB
+config FEATURE_KILL_DELAY
+	int "How long to wait between TERM and KILL (0 - send TERM only)" if FEATURE_KILL_REMOVED
+	range 0 1024
+	default 0
+	depends on FEATURE_KILL_REMOVED
+config FEATURE_INIT_SCTTY
+	bool "Run commands with leading dash with controlling tty"
+	default y
+	depends on INIT
+config FEATURE_INIT_SYSLOG
+	bool "Enable init to write to syslog"
+	default y
+	depends on INIT
+config FEATURE_EXTRA_QUIET
+	bool "Be _extra_ quiet on boot"
+	default y
+	depends on INIT
+config FEATURE_INIT_COREDUMPS
+	bool "Support dumping core for child processes (debugging only)"
+	default y
+	depends on INIT
+config FEATURE_INITRD
+	bool "Support running init from within an initrd (not initramfs)"
+	default y
+	depends on INIT
+config INIT_TERMINAL_TYPE
+	string "Initial terminal type"
+	default "linux"
+	depends on INIT
+config MESG
+	bool "mesg"
+	default y
+config FEATURE_MESG_ENABLE_ONLY_GROUP
+	bool "Enable writing to tty only by group, not by everybody"
+	default y
+	depends on MESG
+endmenu
+menu "Login/Password Management Utilities"
+config ADD_SHELL
+       bool "add-shell"
+       default y if DESKTOP
+config REMOVE_SHELL
+       bool "remove-shell"
+       default y if DESKTOP
+config FEATURE_SHADOWPASSWDS
+	bool "Support for shadow passwords"
+	default y
+config USE_BB_PWD_GRP
+	bool "Use internal password and group functions rather than system functions"
+	default y
+config USE_BB_SHADOW
+	bool "Use internal shadow password functions"
+	default y
+	depends on USE_BB_PWD_GRP && FEATURE_SHADOWPASSWDS
+config USE_BB_CRYPT
+	bool "Use internal crypt functions"
+	default y
+config USE_BB_CRYPT_SHA
+	bool "Enable SHA256/512 crypt functions"
+	default y
+	depends on USE_BB_CRYPT
+config ADDUSER
+	bool "adduser"
+	default y
+config FEATURE_ADDUSER_LONG_OPTIONS
+	bool "Enable long options"
+	default y
+	depends on ADDUSER && LONG_OPTS
+config FEATURE_CHECK_NAMES
+	bool "Enable sanity check on user/group names in adduser and addgroup"
+	default n
+	depends on ADDUSER || ADDGROUP
+config LAST_ID
+	int "Last valid uid or gid for adduser and addgroup"
+	depends on ADDUSER || ADDGROUP
+	default 60000
+config FIRST_SYSTEM_ID
+	int "First valid system uid or gid for adduser and addgroup"
+	depends on ADDUSER || ADDGROUP
+	range 0 LAST_ID
+	default 100
+config LAST_SYSTEM_ID
+	int "Last valid system uid or gid for adduser and addgroup"
+	depends on ADDUSER || ADDGROUP
+	range FIRST_SYSTEM_ID LAST_ID
+	default 999
+config ADDGROUP
+	bool "addgroup"
+	default y
+config FEATURE_ADDGROUP_LONG_OPTIONS
+	bool "Enable long options"
+	default y
+	depends on ADDGROUP && LONG_OPTS
+config FEATURE_ADDUSER_TO_GROUP
+	bool "Support for adding users to groups"
+	default y
+	depends on ADDGROUP
+config DELUSER
+	bool "deluser"
+	default y
+config DELGROUP
+	bool "delgroup"
+	default y
+config FEATURE_DEL_USER_FROM_GROUP
+	bool "Support for removing users from groups"
+	default y
+	depends on DELGROUP
+config GETTY
+	bool "getty"
+	default y
+	select FEATURE_SYSLOG
+config LOGIN
+	bool "login"
+	default y
+	select FEATURE_SYSLOG
+config LOGIN_SESSION_AS_CHILD
+	bool "Run logged in session in a child process"
+	default y if PAM
+	depends on LOGIN
+config LOGIN_SCRIPTS
+	bool "Support for login scripts"
+	depends on LOGIN
+	default y
+config FEATURE_NOLOGIN
+	bool "Support for /etc/nologin"
+	default y
+	depends on LOGIN
+config FEATURE_SECURETTY
+	bool "Support for /etc/securetty"
+	default y
+	depends on LOGIN
+config PASSWD
+	bool "passwd"
+	default y
+	select FEATURE_SYSLOG
+config FEATURE_PASSWD_WEAK_CHECK
+	bool "Check new passwords for weakness"
+	default y
+	depends on PASSWD
+config CRYPTPW
+	bool "cryptpw"
+	default y
+config CHPASSWD
+	bool "chpasswd"
+	default y
+config FEATURE_DEFAULT_PASSWD_ALGO
+	string "Default password encryption method (passwd -a, cryptpw -m parameter)"
+	default "des"
+	depends on PASSWD || CRYPTPW
+config SU
+	bool "su"
+	default y
+	select FEATURE_SYSLOG
+config FEATURE_SU_SYSLOG
+	bool "Enable su to write to syslog"
+	default y
+	depends on SU
+config FEATURE_SU_CHECKS_SHELLS
+	bool "Enable su to check user's shell to be listed in /etc/shells"
+	depends on SU
+	default y
+config SULOGIN
+	bool "sulogin"
+	default y
+	select FEATURE_SYSLOG
+config VLOCK
+	bool "vlock"
+	default y
+endmenu
+menu "Linux Ext2 FS Progs"
+config CHATTR
+	bool "chattr"
+	default y
+config FSCK
+	bool "fsck"
+	default y
+config LSATTR
+	bool "lsattr"
+	default y
+	select PLATFORM_LINUX
+config TUNE2FS
+	bool "tune2fs"
+	default n  # off: it is too limited compared to upstream version
+endmenu
+menu "Linux Module Utilities"
+config MODINFO
+	bool "modinfo"
+	default y
+	select PLATFORM_LINUX
+config MODPROBE_SMALL
+	bool "Simplified modutils"
+	default y
+	select PLATFORM_LINUX
+config FEATURE_MODPROBE_SMALL_OPTIONS_ON_CMDLINE
+	bool "Accept module options on modprobe command line"
+	default y
+	depends on MODPROBE_SMALL
+	select PLATFORM_LINUX
+config FEATURE_MODPROBE_SMALL_CHECK_ALREADY_LOADED
+	bool "Skip loading of already loaded modules"
+	default y
+	depends on MODPROBE_SMALL
+config INSMOD
+	bool "insmod"
+	default n
+	depends on !MODPROBE_SMALL
+	select PLATFORM_LINUX
+config RMMOD
+	bool "rmmod"
+	default n
+	depends on !MODPROBE_SMALL
+	select PLATFORM_LINUX
+config LSMOD
+	bool "lsmod"
+	default n
+	depends on !MODPROBE_SMALL
+	select PLATFORM_LINUX
+config FEATURE_LSMOD_PRETTY_2_6_OUTPUT
+	bool "Pretty output"
+	default n
+	depends on LSMOD
+	select PLATFORM_LINUX
+config MODPROBE
+	bool "modprobe"
+	default n
+	depends on !MODPROBE_SMALL
+	select PLATFORM_LINUX
+config FEATURE_MODPROBE_BLACKLIST
+	bool "Blacklist support"
+	default n
+	depends on MODPROBE
+	select PLATFORM_LINUX
+config DEPMOD
+	bool "depmod"
+	default n
+	depends on !MODPROBE_SMALL
+	select PLATFORM_LINUX
+config FEATURE_2_4_MODULES
+	bool "Support version 2.2/2.4 Linux kernels"
+	default n
+	depends on INSMOD || RMMOD || LSMOD
+	select PLATFORM_LINUX
+config FEATURE_INSMOD_TRY_MMAP
+	bool "Try to load module from a mmap'ed area"
+	default n
+	depends on INSMOD || MODPROBE_SMALL
+	select PLATFORM_LINUX
+config FEATURE_INSMOD_VERSION_CHECKING
+	bool "Enable module version checking"
+	default n
+	depends on FEATURE_2_4_MODULES && (INSMOD || MODPROBE)
+	select PLATFORM_LINUX
+config FEATURE_INSMOD_KSYMOOPS_SYMBOLS
+	bool "Add module symbols to kernel symbol table"
+	default n
+	depends on FEATURE_2_4_MODULES && (INSMOD || MODPROBE)
+	select PLATFORM_LINUX
+config FEATURE_INSMOD_LOADINKMEM
+	bool "In kernel memory optimization (uClinux only)"
+	default n
+	depends on FEATURE_2_4_MODULES && (INSMOD || MODPROBE)
+	select PLATFORM_LINUX
+config FEATURE_INSMOD_LOAD_MAP
+	bool "Enable insmod load map (-m) option"
+	default n
+	depends on FEATURE_2_4_MODULES && INSMOD
+	select PLATFORM_LINUX
+config FEATURE_INSMOD_LOAD_MAP_FULL
+	bool "Symbols in load map"
+	default y
+	depends on FEATURE_INSMOD_LOAD_MAP && !MODPROBE_SMALL
+	select PLATFORM_LINUX
+config FEATURE_CHECK_TAINTED_MODULE
+	bool "Support tainted module checking with new kernels"
+	default y
+	depends on (LSMOD || FEATURE_2_4_MODULES) && !MODPROBE_SMALL
+	select PLATFORM_LINUX
+config FEATURE_MODUTILS_ALIAS
+	bool "Support for module.aliases file"
+	default y
+	depends on DEPMOD || MODPROBE
+	select PLATFORM_LINUX
+config FEATURE_MODUTILS_SYMBOLS
+	bool "Support for module.symbols file"
+	default y
+	depends on DEPMOD || MODPROBE
+	select PLATFORM_LINUX
+config DEFAULT_MODULES_DIR
+	string "Default directory containing modules"
+	default "/lib/modules"
+	depends on DEPMOD || MODPROBE || MODPROBE_SMALL || MODINFO
+config DEFAULT_DEPMOD_FILE
+	string "Default name of modules.dep"
+	default "modules.dep"
+	depends on DEPMOD || MODPROBE || MODPROBE_SMALL || MODINFO
+endmenu
+menu "Linux System Utilities"
+config BLOCKDEV
+	bool "blockdev"
+	default y
+config FATATTR
+	bool "fatattr"
+	default y
+	select PLATFORM_LINUX
+config FSTRIM
+	bool "fstrim"
+	default y
+	select PLATFORM_LINUX
+config MDEV
+	bool "mdev"
+	default y
+	select PLATFORM_LINUX
+config FEATURE_MDEV_CONF
+	bool "Support /etc/mdev.conf"
+	default y
+	depends on MDEV
+config FEATURE_MDEV_RENAME
+	bool "Support subdirs/symlinks"
+	default y
+	depends on FEATURE_MDEV_CONF
+config FEATURE_MDEV_RENAME_REGEXP
+	bool "Support regular expressions substitutions when renaming device"
+	default y
+	depends on FEATURE_MDEV_RENAME
+config FEATURE_MDEV_EXEC
+	bool "Support command execution at device addition/removal"
+	default y
+	depends on FEATURE_MDEV_CONF
+config FEATURE_MDEV_LOAD_FIRMWARE
+	bool "Support loading of firmwares"
+	default y
+	depends on MDEV
+config MOUNT
+	bool "mount"
+	default y
+	select PLATFORM_LINUX
+config FEATURE_MOUNT_FAKE
+	bool "Support option -f"
+	default y
+	depends on MOUNT
+config FEATURE_MOUNT_VERBOSE
+	bool "Support option -v"
+	default y
+	depends on MOUNT
+config FEATURE_MOUNT_HELPERS
+	bool "Support mount helpers"
+	default n
+	depends on MOUNT
+config FEATURE_MOUNT_LABEL
+	bool "Support specifying devices by label or UUID"
+	default y
+	depends on MOUNT
+	select VOLUMEID
+config FEATURE_MOUNT_NFS
+	bool "Support mounting NFS file systems on Linux < 2.6.23"
+	default n
+	depends on MOUNT
+	select FEATURE_HAVE_RPC
+	select FEATURE_SYSLOG
+config FEATURE_MOUNT_CIFS
+	bool "Support mounting CIFS/SMB file systems"
+	default y
+	depends on MOUNT
+config FEATURE_MOUNT_FLAGS
+	depends on MOUNT
+	bool "Support lots of -o flags in mount"
+	default y
+config FEATURE_MOUNT_FSTAB
+	depends on MOUNT
+	bool "Support /etc/fstab and -a"
+	default y
+config FEATURE_MOUNT_OTHERTAB
+	depends on FEATURE_MOUNT_FSTAB
+	bool "Support -T <alt_fstab>"
+	default y
+config REV
+	bool "rev"
+	default y
+config UEVENT
+	bool "uevent"
+	default y
+	select PLATFORM_LINUX
+config ACPID
+	bool "acpid"
+	default y
+	select PLATFORM_LINUX
+config FEATURE_ACPID_COMPAT
+	bool "Accept and ignore redundant options"
+	default y
+	depends on ACPID
+config BLKID
+	bool "blkid"
+	default y
+	select PLATFORM_LINUX
+	select VOLUMEID
+config FEATURE_BLKID_TYPE
+	bool "Print filesystem type"
+	default n
+	depends on BLKID
+config DMESG
+	bool "dmesg"
+	default y
+	select PLATFORM_LINUX
+config FEATURE_DMESG_PRETTY
+	bool "Pretty dmesg output"
+	default y
+	depends on DMESG
+config FBSET
+	bool "fbset"
+	default y
+	select PLATFORM_LINUX
+config FEATURE_FBSET_FANCY
+	bool "Turn on extra fbset options"
+	default y
+	depends on FBSET
+config FEATURE_FBSET_READMODE
+	bool "Turn on fbset readmode support"
+	default y
+	depends on FBSET
+config FDFLUSH
+	bool "fdflush"
+	default y
+	select PLATFORM_LINUX
+config FDFORMAT
+	bool "fdformat"
+	default y
+	select PLATFORM_LINUX
+config FDISK
+	bool "fdisk"
+	default y
+	select PLATFORM_LINUX
+config FDISK_SUPPORT_LARGE_DISKS
+	bool "Support over 4GB disks"
+	default y
+	depends on FDISK
+	depends on !LFS   # with LFS no special code is needed
+config FEATURE_FDISK_WRITABLE
+	bool "Write support"
+	default y
+	depends on FDISK
+config FEATURE_AIX_LABEL
+	bool "Support AIX disklabels"
+	default n
+	depends on FDISK && FEATURE_FDISK_WRITABLE
+config FEATURE_SGI_LABEL
+	bool "Support SGI disklabels"
+	default n
+	depends on FDISK && FEATURE_FDISK_WRITABLE
+config FEATURE_SUN_LABEL
+	bool "Support SUN disklabels"
+	default n
+	depends on FDISK && FEATURE_FDISK_WRITABLE
+config FEATURE_OSF_LABEL
+	bool "Support BSD disklabels"
+	default n
+	depends on FDISK && FEATURE_FDISK_WRITABLE
+config FEATURE_GPT_LABEL
+	bool "Support GPT disklabels"
+	default n
+	depends on FDISK && FEATURE_FDISK_WRITABLE
+config FEATURE_FDISK_ADVANCED
+	bool "Support expert mode"
+	default y
+	depends on FDISK && FEATURE_FDISK_WRITABLE
+config FINDFS
+	bool "findfs"
+	default y
+	select PLATFORM_LINUX
+	select VOLUMEID
+config FLOCK
+	bool "flock"
+	default y
+config FREERAMDISK
+	bool "freeramdisk"
+	default y
+	select PLATFORM_LINUX
+config FSCK_MINIX
+	bool "fsck_minix"
+	default y
+config MKFS_EXT2
+	bool "mkfs_ext2"
+	default y
+	select PLATFORM_LINUX
+config MKFS_MINIX
+	bool "mkfs_minix"
+	default y
+	select PLATFORM_LINUX
+config FEATURE_MINIX2
+	bool "Support Minix fs v2 (fsck_minix/mkfs_minix)"
+	default y
+	depends on FSCK_MINIX || MKFS_MINIX
+config MKFS_REISER
+	bool "mkfs_reiser"
+	default n
+	select PLATFORM_LINUX
+config MKFS_VFAT
+	bool "mkfs_vfat"
+	default y
+	select PLATFORM_LINUX
+config GETOPT
+	bool "getopt"
+	default y
+config FEATURE_GETOPT_LONG
+	bool "Support option -l"
+	default y if LONG_OPTS
+	depends on GETOPT
+config HEXDUMP
+	bool "hexdump"
+	default y
+config FEATURE_HEXDUMP_REVERSE
+	bool "Support -R, reverse of 'hexdump -Cv'"
+	default y
+	depends on HEXDUMP
+config HD
+	bool "hd"
+	default y
+	depends on HEXDUMP
+config HWCLOCK
+	bool "hwclock"
+	default y
+	select PLATFORM_LINUX
+config FEATURE_HWCLOCK_LONG_OPTIONS
+	bool "Support long options (--hctosys,...)"
+	default y
+	depends on HWCLOCK && LONG_OPTS
+config FEATURE_HWCLOCK_ADJTIME_FHS
+	bool "Use FHS /var/lib/hwclock/adjtime"
+	default n  # util-linux-ng in Fedora 13 still uses /etc/adjtime
+	depends on HWCLOCK
+config IPCRM
+	bool "ipcrm"
+	default y
+config IPCS
+	bool "ipcs"
+	default y
+	select PLATFORM_LINUX
+config LOSETUP
+	bool "losetup"
+	default y
+	select PLATFORM_LINUX
+config LSPCI
+	bool "lspci"
+	default y
+config LSUSB
+	bool "lsusb"
+	default y
+config MKSWAP
+	bool "mkswap"
+	default y
+config FEATURE_MKSWAP_UUID
+	bool "UUID support"
+	default y
+	depends on MKSWAP
+config MORE
+	bool "more"
+	default y
+config PIVOT_ROOT
+	bool "pivot_root"
+	default y
+	select PLATFORM_LINUX
+config RDATE
+	bool "rdate"
+	default y
+config RDEV
+	bool "rdev"
+	default y
+config READPROFILE
+	bool "readprofile"
+	default y
+config RTCWAKE
+	bool "rtcwake"
+	default y
+	select PLATFORM_LINUX
+config SCRIPT
+	bool "script"
+	default y
+config SCRIPTREPLAY
+	bool "scriptreplay"
+	default y
+config SETARCH
+	bool "setarch"
+	default y
+	select PLATFORM_LINUX
+config SWAPONOFF
+	bool "swaponoff"
+	default y
+	select PLATFORM_LINUX
+config FEATURE_SWAPON_DISCARD
+	bool "Support discard option -d"
+	default y
+	depends on SWAPONOFF
+config FEATURE_SWAPON_PRI
+	bool "Support priority option -p"
+	default y
+	depends on SWAPONOFF
+config SWITCH_ROOT
+	bool "switch_root"
+	default y
+	select PLATFORM_LINUX
+config UMOUNT
+	bool "umount"
+	default y
+	select PLATFORM_LINUX
+config FEATURE_UMOUNT_ALL
+	bool "Support option -a"
+	default y
+	depends on UMOUNT
+config FEATURE_MOUNT_LOOP
+	bool "Support loopback mounts"
+	default y
+	depends on MOUNT || UMOUNT
+config FEATURE_MOUNT_LOOP_CREATE
+	bool "Create new loopback devices if needed"
+	default y
+	depends on FEATURE_MOUNT_LOOP
+config FEATURE_MTAB_SUPPORT
+	bool "Support for the old /etc/mtab file"
+	default n
+	depends on MOUNT || UMOUNT
+	select FEATURE_MOUNT_FAKE
+config VOLUMEID
+	bool #No description makes it a hidden option
+	default n
+menu "Filesystem/Volume identification"
+	depends on VOLUMEID
+config FEATURE_VOLUMEID_BTRFS
+	bool "btrfs filesystem"
+	default y
+	depends on VOLUMEID
+config FEATURE_VOLUMEID_CRAMFS
+	bool "cramfs filesystem"
+	default y
+	depends on VOLUMEID
+config FEATURE_VOLUMEID_EXFAT
+	bool "exFAT filesystem"
+	default y
+	depends on VOLUMEID
+config FEATURE_VOLUMEID_EXT
+	bool "Ext filesystem"
+	default y
+	depends on VOLUMEID
+config FEATURE_VOLUMEID_F2FS
+	bool "f2fs filesystem"
+	default y
+	depends on VOLUMEID
+config FEATURE_VOLUMEID_FAT
+	bool "fat filesystem"
+	default y
+	depends on VOLUMEID
+config FEATURE_VOLUMEID_HFS
+	bool "hfs filesystem"
+	default y
+	depends on VOLUMEID
+config FEATURE_VOLUMEID_ISO9660
+	bool "iso9660 filesystem"
+	default y
+	depends on VOLUMEID
+config FEATURE_VOLUMEID_JFS
+	bool "jfs filesystem"
+	default y
+	depends on VOLUMEID
+config FEATURE_VOLUMEID_LINUXRAID
+	bool "linuxraid"
+	default y
+	depends on VOLUMEID
+config FEATURE_VOLUMEID_LINUXSWAP
+	bool "linux swap filesystem"
+	default y
+	depends on VOLUMEID
+config FEATURE_VOLUMEID_LUKS
+	bool "luks filesystem"
+	default y
+	depends on VOLUMEID
+config FEATURE_VOLUMEID_NILFS
+	bool "nilfs filesystem"
+	default y
+	depends on VOLUMEID
+config FEATURE_VOLUMEID_NTFS
+	bool "ntfs filesystem"
+	default y
+	depends on VOLUMEID
+config FEATURE_VOLUMEID_OCFS2
+	bool "ocfs2 filesystem"
+	default y
+	depends on VOLUMEID
+config FEATURE_VOLUMEID_REISERFS
+	bool "Reiser filesystem"
+	default y
+	depends on VOLUMEID
+config FEATURE_VOLUMEID_ROMFS
+	bool "romfs filesystem"
+	default y
+	depends on VOLUMEID
+config FEATURE_VOLUMEID_SQUASHFS
+	bool "SquashFS filesystem"
+	default y
+	depends on VOLUMEID && FEATURE_BLKID_TYPE
+config FEATURE_VOLUMEID_SYSV
+	bool "sysv filesystem"
+	default y
+	depends on VOLUMEID
+config FEATURE_VOLUMEID_UDF
+	bool "udf filesystem"
+	default y
+	depends on VOLUMEID
+config FEATURE_VOLUMEID_XFS
+	bool "xfs filesystem"
+	default y
+	depends on VOLUMEID
+endmenu
+endmenu
+menu "Miscellaneous Utilities"
+config CONSPY
+	bool "conspy"
+	default y
+	select PLATFORM_LINUX
+config CROND
+	bool "crond"
+	default y
+	select FEATURE_SYSLOG
+config FEATURE_CROND_D
+	bool "Support option -d to redirect output to stderr"
+	depends on CROND
+	default y
+config FEATURE_CROND_CALL_SENDMAIL
+	bool "Report command output via email (using sendmail)"
+	default y
+	depends on CROND
+config FEATURE_CROND_DIR
+	string "crond spool directory"
+	default "/var/spool/cron"
+	depends on CROND || CRONTAB
+config I2CGET
+	bool "i2cget"
+	default y
+	select PLATFORM_LINUX
+config I2CSET
+	bool "i2cset"
+	default y
+	select PLATFORM_LINUX
+config I2CDUMP
+	bool "i2cdump"
+	default y
+	select PLATFORM_LINUX
+config I2CDETECT
+	bool "i2cdetect"
+	default y
+	select PLATFORM_LINUX
+config LESS
+	bool "less"
+	default y
+config FEATURE_LESS_MAXLINES
+	int "Max number of input lines less will try to eat"
+	default 9999999
+	depends on LESS
+config FEATURE_LESS_BRACKETS
+	bool "Enable bracket searching"
+	default y
+	depends on LESS
+config FEATURE_LESS_FLAGS
+	bool "Enable -m/-M"
+	default y
+	depends on LESS
+config FEATURE_LESS_TRUNCATE
+	bool "Enable -S"
+	default y
+	depends on LESS
+config FEATURE_LESS_MARKS
+	bool "Enable marks"
+	default y
+	depends on LESS
+config FEATURE_LESS_REGEXP
+	bool "Enable regular expressions"
+	default y
+	depends on LESS
+config FEATURE_LESS_WINCH
+	bool "Enable automatic resizing on window size changes"
+	default y
+	depends on LESS
+config FEATURE_LESS_ASK_TERMINAL
+	bool "Use 'tell me cursor position' ESC sequence to measure window"
+	default y
+	depends on FEATURE_LESS_WINCH
+config FEATURE_LESS_DASHCMD
+	bool "Enable flag changes ('-' command)"
+	default y
+	depends on LESS
+config FEATURE_LESS_LINENUMS
+	bool "Enable dynamic switching of line numbers"
+	default y
+	depends on FEATURE_LESS_DASHCMD
+config NANDWRITE
+	bool "nandwrite"
+	default y
+	select PLATFORM_LINUX
+config NANDDUMP
+	bool "nanddump"
+	default y
+	select PLATFORM_LINUX
+config RFKILL
+	bool "rfkill"
+	default n # doesn't build on Ubuntu 9.04
+	select PLATFORM_LINUX
+config SETSERIAL
+	bool "setserial"
+	default y
+	select PLATFORM_LINUX
+config TASKSET
+	bool "taskset"
+	default n  # doesn't build on some non-x86 targets (m68k)
+config FEATURE_TASKSET_FANCY
+	bool "Fancy output"
+	default y
+	depends on TASKSET
+config UBIATTACH
+	bool "ubiattach"
+	default y
+	select PLATFORM_LINUX
+config UBIDETACH
+	bool "ubidetach"
+	default y
+	select PLATFORM_LINUX
+config UBIMKVOL
+	bool "ubimkvol"
+	default y
+	select PLATFORM_LINUX
+config UBIRMVOL
+	bool "ubirmvol"
+	default y
+	select PLATFORM_LINUX
+config UBIRSVOL
+	bool "ubirsvol"
+	default y
+	select PLATFORM_LINUX
+config UBIUPDATEVOL
+	bool "ubiupdatevol"
+	default y
+	select PLATFORM_LINUX
+config WALL
+	bool "wall"
+	default y
+	depends on FEATURE_UTMP
+config ADJTIMEX
+	bool "adjtimex"
+	default y
+	select PLATFORM_LINUX
+config BBCONFIG
+	bool "bbconfig"
+	default n
+config FEATURE_COMPRESS_BBCONFIG
+	bool "Compress bbconfig data"
+	default y
+	depends on BBCONFIG
+config BEEP
+	bool "beep"
+	default y
+	select PLATFORM_LINUX
+config FEATURE_BEEP_FREQ
+	int "default frequency"
+	range 0 2147483647
+	default 4000
+	depends on BEEP
+config FEATURE_BEEP_LENGTH_MS
+	int "default length"
+	range 0 2147483647
+	default 30
+	depends on BEEP
+config CHAT
+	bool "chat"
+	default y
+config FEATURE_CHAT_NOFAIL
+	bool "Enable NOFAIL expect strings"
+	depends on CHAT
+	default y
+config FEATURE_CHAT_TTY_HIFI
+	bool "Force STDIN to be a TTY"
+	depends on CHAT
+	default n
+config FEATURE_CHAT_IMPLICIT_CR
+	bool "Enable implicit Carriage Return"
+	depends on CHAT
+	default y
+config FEATURE_CHAT_SWALLOW_OPTS
+	bool "Swallow options"
+	depends on CHAT
+	default y
+config FEATURE_CHAT_SEND_ESCAPES
+	bool "Support weird SEND escapes"
+	depends on CHAT
+	default y
+config FEATURE_CHAT_VAR_ABORT_LEN
+	bool "Support variable-length ABORT conditions"
+	depends on CHAT
+	default y
+config FEATURE_CHAT_CLR_ABORT
+	bool "Support revoking of ABORT conditions"
+	depends on CHAT
+	default y
+config CHRT
+	bool "chrt"
+	default y
+config CRONTAB
+	bool "crontab"
+	default y
+config DC
+	bool "dc"
+	default y
+config FEATURE_DC_LIBM
+	bool "Enable power and exp functions (requires libm)"
+	default y
+	depends on DC
+config DEVFSD
+	bool "devfsd (obsolete)"
+	default n
+	select PLATFORM_LINUX
+	select FEATURE_SYSLOG
+config DEVFSD_MODLOAD
+	bool "Adds support for MODLOAD keyword in devsfd.conf"
+	default y
+	depends on DEVFSD
+config DEVFSD_FG_NP
+	bool "Enables the -fg and -np options"
+	default y
+	depends on DEVFSD
+config DEVFSD_VERBOSE
+	bool "Increases logging (and size)"
+	default y
+	depends on DEVFSD
+config FEATURE_DEVFS
+	bool "Use devfs names for all devices (obsolete)"
+	default n
+	select PLATFORM_LINUX
+config DEVMEM
+	bool "devmem"
+	default y
+config EJECT
+	bool "eject"
+	default y
+	select PLATFORM_LINUX
+config FEATURE_EJECT_SCSI
+	bool "SCSI support"
+	default y
+	depends on EJECT
+config FBSPLASH
+	bool "fbsplash"
+	default y
+	select PLATFORM_LINUX
+config FLASHCP
+	bool "flashcp"
+	default n  # doesn't build on Ubuntu 8.04
+config FLASH_LOCK
+	bool "flash_lock"
+	default n  # doesn't build on Ubuntu 8.04
+config FLASH_UNLOCK
+	bool "flash_unlock"
+	default n  # doesn't build on Ubuntu 8.04
+config FLASH_ERASEALL
+	bool "flash_eraseall"
+	default n  # doesn't build on Ubuntu 8.04
+config IONICE
+	bool "ionice"
+	default y
+	select PLATFORM_LINUX
+config INOTIFYD
+	bool "inotifyd"
+	default n  # doesn't build on Knoppix 5
+config LAST
+	bool "last"
+	default y
+	depends on FEATURE_WTMP
+choice
+	prompt "Choose last implementation"
+	depends on LAST
+	default FEATURE_LAST_FANCY
+config FEATURE_LAST_SMALL
+	bool "small"
+config FEATURE_LAST_FANCY
+	bool "huge"
+endchoice
+config HDPARM
+	bool "hdparm"
+	default y
+	select PLATFORM_LINUX
+config FEATURE_HDPARM_GET_IDENTITY
+	bool "Support obtaining detailed information directly from drives"
+	default y
+	depends on HDPARM
+config FEATURE_HDPARM_HDIO_SCAN_HWIF
+	bool "Register an IDE interface (DANGEROUS)"
+	default y
+	depends on HDPARM
+config FEATURE_HDPARM_HDIO_UNREGISTER_HWIF
+	bool "Un-register an IDE interface (DANGEROUS)"
+	default y
+	depends on HDPARM
+config FEATURE_HDPARM_HDIO_DRIVE_RESET
+	bool "Perform device reset (DANGEROUS)"
+	default y
+	depends on HDPARM
+config FEATURE_HDPARM_HDIO_TRISTATE_HWIF
+	bool "Tristate device for hotswap (DANGEROUS)"
+	default y
+	depends on HDPARM
+config FEATURE_HDPARM_HDIO_GETSET_DMA
+	bool "Get/set using_dma flag"
+	default y
+	depends on HDPARM
+config MAKEDEVS
+	bool "makedevs"
+	default y
+choice
+	prompt "Choose makedevs behaviour"
+	depends on MAKEDEVS
+	default FEATURE_MAKEDEVS_TABLE
+config FEATURE_MAKEDEVS_LEAF
+	bool "leaf"
+config FEATURE_MAKEDEVS_TABLE
+	bool "table"
+endchoice
+config MAN
+	bool "man"
+	default y
+config MICROCOM
+	bool "microcom"
+	default y
+config MOUNTPOINT
+	bool "mountpoint"
+	default y
+config MT
+	bool "mt"
+	default y
+config RAIDAUTORUN
+	bool "raidautorun"
+	default y
+	select PLATFORM_LINUX
+config READAHEAD
+	bool "readahead"
+	default y
+	depends on LFS
+	select PLATFORM_LINUX
+config RUNLEVEL
+	bool "runlevel"
+	default y
+	depends on FEATURE_UTMP
+config RX
+	bool "rx"
+	default y
+	select PLATFORM_LINUX
+config SETSID
+	bool "setsid"
+	default y
+config STRINGS
+	bool "strings"
+	default y
+config TIME
+	bool "time"
+	default y
+config TIMEOUT
+	bool "timeout"
+	default y
+config TTYSIZE
+	bool "ttysize"
+	default y
+config VOLNAME
+	bool "volname"
+	default y
+config WATCHDOG
+	bool "watchdog"
+	default y
+	select PLATFORM_LINUX
+endmenu
+menu "Networking Utilities"
+config NAMEIF
+	bool "nameif"
+	default y
+	select PLATFORM_LINUX
+	select FEATURE_SYSLOG
+config FEATURE_NAMEIF_EXTENDED
+	bool "Extended nameif"
+	default y
+	depends on NAMEIF
+config NBDCLIENT
+	bool "nbd-client"
+	default y
+config NC
+	bool "nc"
+	default y
+config NC_SERVER
+	bool "Netcat server options (-l)"
+	default y
+	depends on NC
+config NC_EXTRA
+	bool "Netcat extensions (-eiw and -f FILE)"
+	default y
+	depends on NC
+config NC_110_COMPAT
+	bool "Netcat 1.10 compatibility (+2.5k)"
+	default n  # off specially for Rob
+	depends on NC
+config PING
+	bool "ping"
+	default y
+	select PLATFORM_LINUX
+config PING6
+	bool "ping6"
+	default y
+	depends on FEATURE_IPV6 && PING
+config FEATURE_FANCY_PING
+	bool "Enable fancy ping output"
+	default y
+	depends on PING
+config WGET
+	bool "wget"
+	default y
+config FEATURE_WGET_STATUSBAR
+	bool "Enable a nifty process meter (+2k)"
+	default y
+	depends on WGET
+config FEATURE_WGET_AUTHENTICATION
+	bool "Enable HTTP authentication"
+	default y
+	depends on WGET
+config FEATURE_WGET_LONG_OPTIONS
+	bool "Enable long options"
+	default y
+	depends on WGET && LONG_OPTS
+config FEATURE_WGET_TIMEOUT
+	bool "Enable timeout option -T SEC"
+	default y
+	depends on WGET
+config FEATURE_WGET_OPENSSL
+	bool "Try to connect to HTTPS using openssl"
+	default y
+	depends on WGET
+config FEATURE_WGET_SSL_HELPER
+	bool "Try to connect to HTTPS using ssl_helper"
+	default y
+	depends on WGET
+config WHOIS
+	bool "whois"
+	default y
+config FEATURE_IPV6
+	bool "Enable IPv6 support"
+	default y
+config FEATURE_UNIX_LOCAL
+	bool "Enable Unix domain socket support (usually not needed)"
+	default n
+config FEATURE_PREFER_IPV4_ADDRESS
+	bool "Prefer IPv4 addresses from DNS queries"
+	default y
+	depends on FEATURE_IPV6
+config VERBOSE_RESOLUTION_ERRORS
+	bool "Verbose resolution errors"
+	default n
+config ARP
+	bool "arp"
+	default y
+	select PLATFORM_LINUX
+config ARPING
+	bool "arping"
+	default y
+	select PLATFORM_LINUX
+config BRCTL
+	bool "brctl"
+	default y
+	select PLATFORM_LINUX
+config FEATURE_BRCTL_FANCY
+	bool "Fancy options"
+	default y
+	depends on BRCTL
+config FEATURE_BRCTL_SHOW
+	bool "Support show"
+	default y
+	depends on BRCTL && FEATURE_BRCTL_FANCY
+config DNSD
+	bool "dnsd"
+	default y
+config ETHER_WAKE
+	bool "ether-wake"
+	default y
+	select PLATFORM_LINUX
+config FAKEIDENTD
+	bool "fakeidentd"
+	default y
+	select FEATURE_SYSLOG
+config FTPD
+	bool "ftpd"
+	default y
+config FEATURE_FTP_WRITE
+	bool "Enable upload commands"
+	default y
+	depends on FTPD
+config FEATURE_FTPD_ACCEPT_BROKEN_LIST
+	bool "Enable workaround for RFC-violating clients"
+	default y
+	depends on FTPD
+config FEATURE_FTP_AUTHENTICATION
+	bool "Enable authentication"
+	default y
+	depends on FTPD
+config FTPGET
+	bool "ftpget"
+	default y
+config FTPPUT
+	bool "ftpput"
+	default y
+config FEATURE_FTPGETPUT_LONG_OPTIONS
+	bool "Enable long options in ftpget/ftpput"
+	default y
+	depends on LONG_OPTS && (FTPGET || FTPPUT)
+config HOSTNAME
+	bool "hostname"
+	default y
+config HTTPD
+	bool "httpd"
+	default y
+config FEATURE_HTTPD_RANGES
+	bool "Support 'Ranges:' header"
+	default y
+	depends on HTTPD
+config FEATURE_HTTPD_SETUID
+	bool "Enable -u <user> option"
+	default y
+	depends on HTTPD
+config FEATURE_HTTPD_BASIC_AUTH
+	bool "Enable Basic http Authentication"
+	default y
+	depends on HTTPD
+config FEATURE_HTTPD_AUTH_MD5
+	bool "Support MD5 crypted passwords for http Authentication"
+	default y
+	depends on FEATURE_HTTPD_BASIC_AUTH
+config FEATURE_HTTPD_CGI
+	bool "Support Common Gateway Interface (CGI)"
+	default y
+	depends on HTTPD
+config FEATURE_HTTPD_CONFIG_WITH_SCRIPT_INTERPR
+	bool "Support for running scripts through an interpreter"
+	default y
+	depends on FEATURE_HTTPD_CGI
+config FEATURE_HTTPD_SET_REMOTE_PORT_TO_ENV
+	bool "Set REMOTE_PORT environment variable for CGI"
+	default y
+	depends on FEATURE_HTTPD_CGI
+config FEATURE_HTTPD_ENCODE_URL_STR
+	bool "Enable -e option (useful for CGIs written as shell scripts)"
+	default y
+	depends on HTTPD
+config FEATURE_HTTPD_ERROR_PAGES
+	bool "Support for custom error pages"
+	default y
+	depends on HTTPD
+config FEATURE_HTTPD_PROXY
+	bool "Support for reverse proxy"
+	default y
+	depends on HTTPD
+config FEATURE_HTTPD_GZIP
+	bool "Support for GZIP content encoding"
+	default y
+	depends on HTTPD
+config IFCONFIG
+	bool "ifconfig"
+	default y
+	select PLATFORM_LINUX
+config FEATURE_IFCONFIG_STATUS
+	bool "Enable status reporting output (+7k)"
+	default y
+	depends on IFCONFIG
+config FEATURE_IFCONFIG_SLIP
+	bool "Enable slip-specific options \"keepalive\" and \"outfill\""
+	default y
+	depends on IFCONFIG
+config FEATURE_IFCONFIG_MEMSTART_IOADDR_IRQ
+	bool "Enable options \"mem_start\", \"io_addr\", and \"irq\""
+	default y
+	depends on IFCONFIG
+config FEATURE_IFCONFIG_HW
+	bool "Enable option \"hw\" (ether only)"
+	default y
+	depends on IFCONFIG
+config FEATURE_IFCONFIG_BROADCAST_PLUS
+	bool "Set the broadcast automatically"
+	default y
+	depends on IFCONFIG
+config IFENSLAVE
+	bool "ifenslave"
+	default y
+	select PLATFORM_LINUX
+config IFPLUGD
+	bool "ifplugd"
+	default y
+	select PLATFORM_LINUX
+config IFUPDOWN
+	bool "ifupdown"
+	default y
+config IFUPDOWN_IFSTATE_PATH
+	string "Absolute path to ifstate file"
+	default "/var/run/ifstate"
+	depends on IFUPDOWN
+config FEATURE_IFUPDOWN_IP
+	bool "Use ip applet"
+	default y
+	depends on IFUPDOWN
+config FEATURE_IFUPDOWN_IP_BUILTIN
+	bool "Use busybox ip applet"
+	default y
+	depends on FEATURE_IFUPDOWN_IP
+	select PLATFORM_LINUX
+	select IP
+	select FEATURE_IP_ADDRESS
+	select FEATURE_IP_LINK
+	select FEATURE_IP_ROUTE
+config FEATURE_IFUPDOWN_IFCONFIG_BUILTIN
+	bool "Use busybox ifconfig and route applets"
+	default n
+	depends on IFUPDOWN && !FEATURE_IFUPDOWN_IP
+	select IFCONFIG
+	select ROUTE
+config FEATURE_IFUPDOWN_IPV4
+	bool "Support for IPv4"
+	default y
+	depends on IFUPDOWN
+config FEATURE_IFUPDOWN_IPV6
+	bool "Support for IPv6"
+	default y
+	depends on IFUPDOWN && FEATURE_IPV6
+config FEATURE_IFUPDOWN_MAPPING
+	bool "Enable mapping support"
+	default y
+	depends on IFUPDOWN
+config FEATURE_IFUPDOWN_EXTERNAL_DHCP
+	bool "Support for external dhcp clients"
+	default n
+	depends on IFUPDOWN
+config INETD
+	bool "inetd"
+	default y
+	select FEATURE_SYSLOG
+config FEATURE_INETD_SUPPORT_BUILTIN_ECHO
+	bool "Support echo service"
+	default y
+	depends on INETD
+config FEATURE_INETD_SUPPORT_BUILTIN_DISCARD
+	bool "Support discard service"
+	default y
+	depends on INETD
+config FEATURE_INETD_SUPPORT_BUILTIN_TIME
+	bool "Support time service"
+	default y
+	depends on INETD
+config FEATURE_INETD_SUPPORT_BUILTIN_DAYTIME
+	bool "Support daytime service"
+	default y
+	depends on INETD
+config FEATURE_INETD_SUPPORT_BUILTIN_CHARGEN
+	bool "Support chargen service"
+	default y
+	depends on INETD
+config FEATURE_INETD_RPC
+	bool "Support RPC services"
+	default y
+	depends on INETD
+	select FEATURE_HAVE_RPC
+config IP
+	bool "ip"
+	default y
+	select PLATFORM_LINUX
+config FEATURE_IP_ADDRESS
+	bool "ip address"
+	default y
+	depends on IP
+config FEATURE_IP_LINK
+	bool "ip link"
+	default y
+	depends on IP
+config FEATURE_IP_ROUTE
+	bool "ip route"
+	default y
+	depends on IP
+config FEATURE_IP_ROUTE_DIR
+	string "ip route configuration directory"
+	default "/etc/iproute2"
+	depends on FEATURE_IP_ROUTE
+config FEATURE_IP_TUNNEL
+	bool "ip tunnel"
+	default y
+	depends on IP
+config FEATURE_IP_RULE
+	bool "ip rule"
+	default y
+	depends on IP
+config FEATURE_IP_SHORT_FORMS
+	bool "Support short forms of ip commands"
+	default y
+	depends on IP
+config FEATURE_IP_RARE_PROTOCOLS
+	bool "Support displaying rarely used link types"
+	default n
+	depends on IP
+config IPADDR
+	bool
+	default y
+	depends on FEATURE_IP_SHORT_FORMS && FEATURE_IP_ADDRESS
+config IPLINK
+	bool
+	default y
+	depends on FEATURE_IP_SHORT_FORMS && FEATURE_IP_LINK
+config IPROUTE
+	bool
+	default y
+	depends on FEATURE_IP_SHORT_FORMS && FEATURE_IP_ROUTE
+config IPTUNNEL
+	bool
+	default y
+	depends on FEATURE_IP_SHORT_FORMS && FEATURE_IP_TUNNEL
+config IPRULE
+	bool
+	default y
+	depends on FEATURE_IP_SHORT_FORMS && FEATURE_IP_RULE
+config IPCALC
+	bool "ipcalc"
+	default y
+config FEATURE_IPCALC_FANCY
+	bool "Fancy IPCALC, more options, adds 1 kbyte"
+	default y
+	depends on IPCALC
+config FEATURE_IPCALC_LONG_OPTIONS
+	bool "Enable long options"
+	default y
+	depends on IPCALC && LONG_OPTS
+config NETSTAT
+	bool "netstat"
+	default y
+	select PLATFORM_LINUX
+config FEATURE_NETSTAT_WIDE
+	bool "Enable wide netstat output"
+	default y
+	depends on NETSTAT
+config FEATURE_NETSTAT_PRG
+	bool "Enable PID/Program name output"
+	default y
+	depends on NETSTAT
+config NSLOOKUP
+	bool "nslookup"
+	default y
+config NTPD
+	bool "ntpd"
+	default y
+	select PLATFORM_LINUX
+config FEATURE_NTPD_SERVER
+	bool "Make ntpd usable as a NTP server"
+	default y
+	depends on NTPD
+config FEATURE_NTPD_CONF
+	bool "Make ntpd understand /etc/ntp.conf"
+	default y
+	depends on NTPD
+config PSCAN
+	bool "pscan"
+	default y
+config ROUTE
+	bool "route"
+	default y
+	select PLATFORM_LINUX
+config SLATTACH
+	bool "slattach"
+	default y
+	select PLATFORM_LINUX
+config TCPSVD
+	bool "tcpsvd"
+	default y
+config TELNET
+	bool "telnet"
+	default y
+config FEATURE_TELNET_TTYPE
+	bool "Pass TERM type to remote host"
+	default y
+	depends on TELNET
+config FEATURE_TELNET_AUTOLOGIN
+	bool "Pass USER type to remote host"
+	default y
+	depends on TELNET
+config TELNETD
+	bool "telnetd"
+	default y
+	select FEATURE_SYSLOG
+config FEATURE_TELNETD_STANDALONE
+	bool "Support standalone telnetd (not inetd only)"
+	default y
+	depends on TELNETD
+config FEATURE_TELNETD_INETD_WAIT
+	bool "Support -w SEC option (inetd wait mode)"
+	default y
+	depends on FEATURE_TELNETD_STANDALONE
+config TFTP
+	bool "tftp"
+	default y
+config TFTPD
+	bool "tftpd"
+	default y
+config FEATURE_TFTP_GET
+	bool "Enable 'tftp get' and/or tftpd upload code"
+	default y
+	depends on TFTP || TFTPD
+config FEATURE_TFTP_PUT
+	bool "Enable 'tftp put' and/or tftpd download code"
+	default y
+	depends on TFTP || TFTPD
+config FEATURE_TFTP_BLOCKSIZE
+	bool "Enable 'blksize' and 'tsize' protocol options"
+	default y
+	depends on TFTP || TFTPD
+config FEATURE_TFTP_PROGRESS_BAR
+	bool "Enable tftp progress meter"
+	default y
+	depends on TFTP && FEATURE_TFTP_BLOCKSIZE
+config TFTP_DEBUG
+	bool "Enable debug"
+	default n
+	depends on TFTP || TFTPD
+config TRACEROUTE
+	bool "traceroute"
+	default y
+	select PLATFORM_LINUX
+config TRACEROUTE6
+	bool "traceroute6"
+	default y
+	depends on FEATURE_IPV6 && TRACEROUTE
+config FEATURE_TRACEROUTE_VERBOSE
+	bool "Enable verbose output"
+	default y
+	depends on TRACEROUTE
+config FEATURE_TRACEROUTE_SOURCE_ROUTE
+	bool "Enable loose source route"
+	default n
+	depends on TRACEROUTE
+config FEATURE_TRACEROUTE_USE_ICMP
+	bool "Use ICMP instead of UDP"
+	default n
+	depends on TRACEROUTE
+config TUNCTL
+	bool "tunctl"
+	default y
+	select PLATFORM_LINUX
+config FEATURE_TUNCTL_UG
+	bool "Support owner:group assignment"
+	default y
+	depends on TUNCTL
+config UDHCPC6
+	bool "udhcp client for DHCPv6 (udhcpc6)"
+	default n  # not yet ready
+	depends on FEATURE_IPV6
+config UDHCPD
+	bool "udhcp server (udhcpd)"
+	default y
+	select PLATFORM_LINUX
+config DHCPRELAY
+	bool "dhcprelay"
+	default y
+	depends on UDHCPD
+config DUMPLEASES
+	bool "Lease display utility (dumpleases)"
+	default y
+	depends on UDHCPD
+config FEATURE_UDHCPD_WRITE_LEASES_EARLY
+	bool "Rewrite the lease file at every new acknowledge"
+	default y
+	depends on UDHCPD
+config FEATURE_UDHCPD_BASE_IP_ON_MAC
+	bool "Select IP address based on client MAC"
+	default n
+	depends on UDHCPD
+config DHCPD_LEASES_FILE
+	string "Absolute path to lease file"
+	default "/var/lib/misc/udhcpd.leases"
+	depends on UDHCPD
+config UDHCPC
+	bool "udhcp client (udhcpc)"
+	default y
+	select PLATFORM_LINUX
+config FEATURE_UDHCPC_ARPING
+	bool "Verify that the offered address is free, using ARP ping"
+	default y
+	depends on UDHCPC
+config FEATURE_UDHCPC_SANITIZEOPT
+	bool "Do not pass malformed host and domain names"
+	default y
+	depends on UDHCPC
+config FEATURE_UDHCP_PORT
+	bool "Enable '-P port' option for udhcpd and udhcpc"
+	default n
+	depends on UDHCPD || UDHCPC
+config UDHCP_DEBUG
+	int "Maximum verbosity level for udhcp applets (0..9)"
+	default 9
+	range 0 9
+	depends on UDHCPD || UDHCPC || DHCPRELAY
+config FEATURE_UDHCP_RFC3397
+	bool "Support for RFC3397 domain search (experimental)"
+	default y
+	depends on UDHCPD || UDHCPC
+config FEATURE_UDHCP_8021Q
+	bool "Support for 802.1Q VLAN parameters"
+	default y
+	depends on UDHCPD || UDHCPC
+config UDHCPC_DEFAULT_SCRIPT
+	string "Absolute path to config script"
+	default "/usr/share/udhcpc/default.script"
+	depends on UDHCPC
+config UDHCPC_SLACK_FOR_BUGGY_SERVERS
+	int "DHCP options slack buffer size"
+	default 80
+	range 0 924
+	depends on UDHCPD || UDHCPC
+config IFUPDOWN_UDHCPC_CMD_OPTIONS
+	string "ifup udhcpc command line options"
+	default "-R -n"
+	depends on IFUPDOWN && UDHCPC
+config UDPSVD
+	bool "udpsvd"
+	default y
+config VCONFIG
+	bool "vconfig"
+	default y
+	select PLATFORM_LINUX
+config ZCIP
+	bool "zcip"
+	default y
+	select PLATFORM_LINUX
+	select FEATURE_SYSLOG
+endmenu
+menu "Print Utilities"
+config LPD
+	bool "lpd"
+	default y
+config LPR
+	bool "lpr"
+	default y
+config LPQ
+	bool "lpq"
+	default y
+endmenu
+menu "Mail Utilities"
+config MAKEMIME
+	bool "makemime"
+	default y
+config FEATURE_MIME_CHARSET
+	string "Default charset"
+	default "us-ascii"
+	depends on MAKEMIME || REFORMIME || SENDMAIL
+config POPMAILDIR
+	bool "popmaildir"
+	default y
+config FEATURE_POPMAILDIR_DELIVERY
+	bool "Allow message filters and custom delivery program"
+	default y
+	depends on POPMAILDIR
+config REFORMIME
+	bool "reformime"
+	default y
+config FEATURE_REFORMIME_COMPAT
+	bool "Accept and ignore options other than -x and -X"
+	default y
+	depends on REFORMIME
+config SENDMAIL
+	bool "sendmail"
+	default y
+endmenu
+menu "Process Utilities"
+config IOSTAT
+	bool "iostat"
+	default y
+config LSOF
+	bool "lsof"
+	default y
+config MPSTAT
+	bool "mpstat"
+	default y
+config NMETER
+	bool "nmeter"
+	default y
+config PMAP
+       bool "pmap"
+       default y
+config POWERTOP
+	bool "powertop"
+	default y
+config PSTREE
+	bool "pstree"
+	default y
+config PWDX
+	bool "pwdx"
+	default y
+config SMEMCAP
+	bool "smemcap"
+	default y
+config TOP
+	bool "top"
+	default y
+config FEATURE_TOP_CPU_USAGE_PERCENTAGE
+	bool "Show CPU per-process usage percentage"
+	default y
+	depends on TOP
+config FEATURE_TOP_CPU_GLOBAL_PERCENTS
+	bool "Show CPU global usage percentage"
+	default y
+	depends on FEATURE_TOP_CPU_USAGE_PERCENTAGE
+config FEATURE_TOP_SMP_CPU
+	bool "SMP CPU usage display ('c' key)"
+	default y
+	depends on FEATURE_TOP_CPU_GLOBAL_PERCENTS
+config FEATURE_TOP_DECIMALS
+	bool "Show 1/10th of a percent in CPU/mem statistics"
+	default y
+	depends on FEATURE_TOP_CPU_USAGE_PERCENTAGE
+config FEATURE_TOP_SMP_PROCESS
+	bool "Show CPU process runs on ('j' field)"
+	default y
+	depends on TOP
+config FEATURE_TOPMEM
+	bool "Topmem command ('s' key)"
+	default y
+	depends on TOP
+config UPTIME
+	bool "uptime"
+	default y
+	select PLATFORM_LINUX #sysinfo()
+config FEATURE_UPTIME_UTMP_SUPPORT
+	bool "Support for showing the number of users"
+	default y
+	depends on UPTIME && FEATURE_UTMP
+config FREE
+	bool "free"
+	default y
+	select PLATFORM_LINUX #sysinfo()
+config FUSER
+	bool "fuser"
+	default y
+config KILL
+	bool "kill"
+	default y
+config KILLALL
+	bool "killall"
+	default y
+	depends on KILL
+config KILLALL5
+	bool "killall5"
+	default y
+	depends on KILL
+config PGREP
+	bool "pgrep"
+	default y
+config PIDOF
+	bool "pidof"
+	default y
+config FEATURE_PIDOF_SINGLE
+	bool "Enable argument for single shot (-s)"
+	default y
+	depends on PIDOF
+config FEATURE_PIDOF_OMIT
+	bool "Enable argument for omitting pids (-o)"
+	default y
+	depends on PIDOF
+config PKILL
+	bool "pkill"
+	default y
+config PS
+	bool "ps"
+	default y
+config FEATURE_PS_WIDE
+	bool "Enable wide output option (-w)"
+	default y
+	depends on PS && !DESKTOP
+config FEATURE_PS_LONG
+	bool "Enable long output option (-l)"
+	default y
+	depends on PS && !DESKTOP
+config FEATURE_PS_TIME
+	bool "Enable time and elapsed time output"
+	default y
+	depends on PS && DESKTOP
+	select PLATFORM_LINUX
+config FEATURE_PS_ADDITIONAL_COLUMNS
+	bool "Enable additional ps columns"
+	default y
+	depends on PS && DESKTOP
+config FEATURE_PS_UNUSUAL_SYSTEMS
+	bool "Support Linux prior to 2.4.0 and non-ELF systems"
+	default n
+	depends on FEATURE_PS_TIME
+config RENICE
+	bool "renice"
+	default y
+config BB_SYSCTL
+	bool "sysctl"
+	default y
+config FEATURE_SHOW_THREADS
+	bool "Support for showing threads in ps/pstree/top"
+	default y
+	depends on PS || TOP || PSTREE
+config WATCH
+	bool "watch"
+	default y
+endmenu
+menu "Runit Utilities"
+config RUNSV
+	bool "runsv"
+	default y
+config RUNSVDIR
+	bool "runsvdir"
+	default y
+config FEATURE_RUNSVDIR_LOG
+	bool "Enable scrolling argument log"
+	depends on RUNSVDIR
+	default n
+config SV
+	bool "sv"
+	default y
+config SV_DEFAULT_SERVICE_DIR
+	string "Default directory for services"
+	default "/var/service"
+	depends on SV
+config SVLOGD
+	bool "svlogd"
+	default y
+config CHPST
+	bool "chpst"
+	default y
+config SETUIDGID
+	bool "setuidgid"
+	default y
+config ENVUIDGID
+	bool "envuidgid"
+	default y
+config ENVDIR
+	bool "envdir"
+	default y
+config SOFTLIMIT
+	bool "softlimit"
+	default y
+endmenu
+menu "SELinux Utilities"
+	depends on SELINUX
+config CHCON
+	bool "chcon"
+	default n
+	depends on SELINUX
+config FEATURE_CHCON_LONG_OPTIONS
+	bool "Enable long options"
+	default y
+	depends on CHCON && LONG_OPTS
+config GETENFORCE
+	bool "getenforce"
+	default n
+	depends on SELINUX
+config GETSEBOOL
+	bool "getsebool"
+	default n
+	depends on SELINUX
+config LOAD_POLICY
+	bool "load_policy"
+	default n
+	depends on SELINUX
+config MATCHPATHCON
+	bool "matchpathcon"
+	default n
+	depends on SELINUX
+config RESTORECON
+	bool "restorecon"
+	default n
+	depends on SELINUX
+config RUNCON
+	bool "runcon"
+	default n
+	depends on SELINUX
+config FEATURE_RUNCON_LONG_OPTIONS
+	bool "Enable long options"
+	default y
+	depends on RUNCON && LONG_OPTS
+config SELINUXENABLED
+	bool "selinuxenabled"
+	default n
+	depends on SELINUX
+config SETENFORCE
+	bool "setenforce"
+	default n
+	depends on SELINUX
+config SETFILES
+	bool "setfiles"
+	default n
+	depends on SELINUX
+config FEATURE_SETFILES_CHECK_OPTION
+	bool "Enable check option"
+	default n
+	depends on SETFILES
+config SETSEBOOL
+	bool "setsebool"
+	default n
+	depends on SELINUX
+config SESTATUS
+	bool "sestatus"
+	default n
+	depends on SELINUX
+endmenu
+menu "Shells"
+config ASH
+	bool "ash"
+	default y
+	depends on !NOMMU
+config ASH_BASH_COMPAT
+	bool "bash-compatible extensions"
+	default y
+	depends on ASH
+config ASH_IDLE_TIMEOUT
+	bool "Idle timeout variable"
+	default n
+	depends on ASH
+config ASH_JOB_CONTROL
+	bool "Job control"
+	default y
+	depends on ASH
+config ASH_ALIAS
+	bool "Alias support"
+	default y
+	depends on ASH
+config ASH_GETOPTS
+	bool "Builtin getopt to parse positional parameters"
+	default y
+	depends on ASH
+config ASH_BUILTIN_ECHO
+	bool "Builtin version of 'echo'"
+	default y
+	depends on ASH
+config ASH_BUILTIN_PRINTF
+	bool "Builtin version of 'printf'"
+	default y
+	depends on ASH
+config ASH_BUILTIN_TEST
+	bool "Builtin version of 'test'"
+	default y
+	depends on ASH
+config ASH_HELP
+	bool "help builtin"
+	default y
+	depends on ASH
+config ASH_CMDCMD
+	bool "'command' command to override shell builtins"
+	default y
+	depends on ASH
+config ASH_MAIL
+	bool "Check for new mail on interactive shells"
+	default n
+	depends on ASH
+config ASH_OPTIMIZE_FOR_SIZE
+	bool "Optimize for size instead of speed"
+	default y
+	depends on ASH
+config ASH_RANDOM_SUPPORT
+	bool "Pseudorandom generator and $RANDOM variable"
+	default y
+	depends on ASH
+config ASH_EXPAND_PRMT
+	bool "Expand prompt string"
+	default y
+	depends on ASH
+config CTTYHACK
+	bool "cttyhack"
+	default y
+config HUSH
+	bool "hush"
+	default y
+config HUSH_BASH_COMPAT
+	bool "bash-compatible extensions"
+	default y
+	depends on HUSH
+config HUSH_BRACE_EXPANSION
+	bool "Brace expansion"
+	default y
+	depends on HUSH_BASH_COMPAT
+config HUSH_HELP
+	bool "help builtin"
+	default y
+	depends on HUSH
+config HUSH_INTERACTIVE
+	bool "Interactive mode"
+	default y
+	depends on HUSH
+config HUSH_SAVEHISTORY
+	bool "Save command history to .hush_history"
+	default y
+	depends on HUSH_INTERACTIVE && FEATURE_EDITING_SAVEHISTORY
+config HUSH_JOB
+	bool "Job control"
+	default y
+	depends on HUSH_INTERACTIVE
+config HUSH_TICK
+	bool "Process substitution"
+	default y
+	depends on HUSH
+config HUSH_IF
+	bool "Support if/then/elif/else/fi"
+	default y
+	depends on HUSH
+config HUSH_LOOPS
+	bool "Support for, while and until loops"
+	default y
+	depends on HUSH
+config HUSH_CASE
+	bool "Support case ... esac statement"
+	default y
+	depends on HUSH
+config HUSH_FUNCTIONS
+	bool "Support funcname() { commands; } syntax"
+	default y
+	depends on HUSH
+config HUSH_LOCAL
+	bool "Support local builtin"
+	default y
+	depends on HUSH_FUNCTIONS
+config HUSH_RANDOM_SUPPORT
+	bool "Pseudorandom generator and $RANDOM variable"
+	default y
+	depends on HUSH
+config HUSH_EXPORT_N
+	bool "Support 'export -n' option"
+	default y
+	depends on HUSH
+config HUSH_MODE_X
+	bool "Support 'hush -x' option and 'set -x' command"
+	default y
+	depends on HUSH
+config MSH
+	bool "msh (deprecated: aliased to hush)"
+	default n
+	select HUSH
+choice
+	prompt "Choose which shell is aliased to 'sh' name"
+	default FEATURE_SH_IS_ASH
+config FEATURE_SH_IS_ASH
+	depends on ASH
+	bool "ash"
+	depends on !NOMMU
+config FEATURE_SH_IS_HUSH
+	depends on HUSH
+	bool "hush"
+config FEATURE_SH_IS_NONE
+	bool "none"
+endchoice
+choice
+	prompt "Choose which shell is aliased to 'bash' name"
+	default FEATURE_BASH_IS_NONE
+config FEATURE_BASH_IS_ASH
+	depends on ASH
+	bool "ash"
+	depends on !NOMMU
+config FEATURE_BASH_IS_HUSH
+	depends on HUSH
+	bool "hush"
+config FEATURE_BASH_IS_NONE
+	bool "none"
+endchoice
+config SH_MATH_SUPPORT
+	bool "POSIX math support"
+	default y
+	depends on ASH || HUSH
+config SH_MATH_SUPPORT_64
+	bool "Extend POSIX math support to 64 bit"
+	default y
+	depends on SH_MATH_SUPPORT
+config FEATURE_SH_EXTRA_QUIET
+	bool "Hide message on interactive shell startup"
+	default y
+	depends on HUSH || ASH
+config FEATURE_SH_STANDALONE
+	bool "Standalone shell"
+	default n
+	depends on (HUSH || ASH) && FEATURE_PREFER_APPLETS
+config FEATURE_SH_NOFORK
+	bool "Run 'nofork' applets directly"
+	default n
+	depends on (HUSH || ASH) && FEATURE_PREFER_APPLETS
+config FEATURE_SH_HISTFILESIZE
+	bool "Use $HISTFILESIZE"
+	default y
+	depends on HUSH || ASH
+endmenu
+menu "System Logging Utilities"
+config SYSLOGD
+	bool "syslogd"
+	default y
+config FEATURE_ROTATE_LOGFILE
+	bool "Rotate message files"
+	default y
+	depends on SYSLOGD
+config FEATURE_REMOTE_LOG
+	bool "Remote Log support"
+	default y
+	depends on SYSLOGD
+config FEATURE_SYSLOGD_DUP
+	bool "Support -D (drop dups) option"
+	default y
+	depends on SYSLOGD
+config FEATURE_SYSLOGD_CFG
+	bool "Support syslog.conf"
+	default y
+	depends on SYSLOGD
+config FEATURE_SYSLOGD_READ_BUFFER_SIZE
+	int "Read buffer size in bytes"
+	default 256
+	range 256 20000
+	depends on SYSLOGD
+config FEATURE_IPC_SYSLOG
+	bool "Circular Buffer support"
+	default y
+	depends on SYSLOGD
+config FEATURE_IPC_SYSLOG_BUFFER_SIZE
+	int "Circular buffer size in Kbytes (minimum 4KB)"
+	default 16
+	range 4 2147483647
+	depends on FEATURE_IPC_SYSLOG
+config LOGREAD
+	bool "logread"
+	default y
+	depends on FEATURE_IPC_SYSLOG
+config FEATURE_LOGREAD_REDUCED_LOCKING
+	bool "Double buffering"
+	default y
+	depends on LOGREAD
+config FEATURE_KMSG_SYSLOG
+	bool "Linux kernel printk buffer support"
+	default y
+	depends on SYSLOGD
+	select PLATFORM_LINUX
+config KLOGD
+	bool "klogd"
+	default y
+config FEATURE_KLOGD_KLOGCTL
+	bool "Use the klogctl() interface"
+	default y
+	depends on KLOGD
+	select PLATFORM_LINUX
+config LOGGER
+	bool "logger"
+	default y
+	select FEATURE_SYSLOG
+endmenu

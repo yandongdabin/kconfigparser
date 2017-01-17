@@ -1,0 +1,10 @@
+#
+# CONFIG_CHOICE_2 is not set
+# CONFIG_2 is not set
+# CONFIG_1 is not set
+CONFIG_ANON_CONFIG=y
+CONFIG_STR_CONFIG="def_str"
+# CONFIG_CHOICE_1 is not set
+CONFIG_INT_CONFIG=10
+# CONFIG_CHOICE_3 is not set
+CONFIG_BOOL_CONFIG=y

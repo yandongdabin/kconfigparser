@@ -1,0 +1,366 @@
+mainmenu "axTLS Configuration"
+config HAVE_DOT_CONFIG
+    bool
+    default y
+
+config CONFIG_PLATFORM_LINUX
+    bool
+	default y
+config CONFIG_PLATFORM_CYGWIN
+	bool    
+	default n
+config CONFIG_PLATFORM_WIN32
+    bool
+	default n
+menu "General Configuration"
+config PREFIX
+    string "axTLS installation prefix"
+    depends on !CONFIG_PLATFORM_WIN32
+    default "/usr/local"
+config CONFIG_DEBUG
+    bool "Build axTLS with Debugging symbols"
+    default n
+config CONFIG_STRIP_UNWANTED_SECTIONS
+    depends on !CONFIG_PLATFORM_WIN32 && !CONFIG_DEBUG
+    bool "Strip unwanted sections from elf binaries"
+    default y
+menu "Microsoft Compiler Options"
+depends on CONFIG_PLATFORM_WIN32
+choice 
+    prompt "Compiler"
+    depends on CONFIG_PLATFORM_WIN32
+    default CONFIG_VISUAL_STUDIO_10_0
+config CONFIG_VISUAL_STUDIO_7_0
+    bool "Visual Studio 7.0 (2003)"
+config CONFIG_VISUAL_STUDIO_8_0
+    bool "Visual Studio 8.0 (2005)"
+config CONFIG_VISUAL_STUDIO_10_0
+    bool "Visual Studio 10.0 (2010)"
+endchoice
+config CONFIG_VISUAL_STUDIO_7_0_BASE
+    string "Base"
+    depends on CONFIG_VISUAL_STUDIO_7_0
+    default "c:\\Program Files\\Microsoft Visual Studio .NET 2003"
+config CONFIG_VISUAL_STUDIO_8_0_BASE
+    string "Base"
+    depends on CONFIG_VISUAL_STUDIO_8_0
+    default "c:\\Program Files\\Microsoft Visual Studio 8"
+config CONFIG_VISUAL_STUDIO_10_0_BASE
+    string "Base"
+    depends on CONFIG_VISUAL_STUDIO_10_0
+    default "c:\\Program Files\\Microsoft Visual Studio 10.0"
+endmenu
+config CONFIG_EXTRA_CFLAGS_OPTIONS
+    string "Any extra CFLAGS options for the compiler?"
+config CONFIG_EXTRA_LDFLAGS_OPTIONS
+    string "Any extra LDFLAGS options for the compiler?"
+endmenu
+menu "SSL Library"
+choice
+    prompt "Mode"
+    default CONFIG_SSL_FULL_MODE
+config CONFIG_SSL_SERVER_ONLY
+    bool "Server only - no verification"
+config CONFIG_SSL_CERT_VERIFICATION
+    bool "Server only - with verification"
+config CONFIG_SSL_ENABLE_CLIENT
+    bool "Client/Server enabled"
+config CONFIG_SSL_FULL_MODE
+    bool "Client/Server enabled with diagnostics"
+config CONFIG_SSL_SKELETON_MODE
+    bool "Skeleton mode - the smallest server mode"
+endchoice
+choice
+    prompt "Protocol Preference"
+    depends on !CONFIG_SSL_SKELETON_MODE
+    default CONFIG_SSL_PROT_MEDIUM
+config CONFIG_SSL_PROT_LOW
+    bool "Low"
+config CONFIG_SSL_PROT_MEDIUM
+    bool "Medium"
+config CONFIG_SSL_PROT_HIGH
+    bool "High"
+endchoice
+config CONFIG_SSL_USE_DEFAULT_KEY
+    bool "Enable default key"
+    depends on !CONFIG_SSL_SKELETON_MODE
+    default y 
+config CONFIG_SSL_PRIVATE_KEY_LOCATION
+    string "Private key file location"
+    depends on !CONFIG_SSL_USE_DEFAULT_KEY && !CONFIG_SSL_SKELETON_MODE
+config CONFIG_SSL_PRIVATE_KEY_PASSWORD
+    string "Private key password"
+    depends on !CONFIG_SSL_USE_DEFAULT_KEY && CONFIG_SSL_HAS_PEM
+config CONFIG_SSL_X509_CERT_LOCATION
+    string "X.509 certificate file location"
+    depends on !CONFIG_SSL_GENERATE_X509_CERT && !CONFIG_SSL_USE_DEFAULT_KEY && !CONFIG_SSL_SKELETON_MODE
+config CONFIG_SSL_GENERATE_X509_CERT
+    bool "Generate X.509 Certificate"
+    default n
+config CONFIG_SSL_X509_COMMON_NAME
+    string "X.509 Common Name"
+    depends on CONFIG_SSL_GENERATE_X509_CERT
+config CONFIG_SSL_X509_ORGANIZATION_NAME
+    string "X.509 Organization Name"
+    depends on CONFIG_SSL_GENERATE_X509_CERT
+config CONFIG_SSL_X509_ORGANIZATION_UNIT_NAME
+    string "X.509 Organization Unit Name"
+    depends on CONFIG_SSL_GENERATE_X509_CERT
+config CONFIG_SSL_ENABLE_V23_HANDSHAKE
+    bool "Enable v23 Handshake"
+    default n
+config CONFIG_SSL_HAS_PEM
+    bool "Enable PEM"
+    default n if !CONFIG_SSL_FULL_MODE
+    default y if CONFIG_SSL_FULL_MODE
+    depends on !CONFIG_SSL_SKELETON_MODE
+config CONFIG_SSL_USE_PKCS12
+    bool "Use PKCS8/PKCS12"
+    default n if !CONFIG_SSL_FULL_MODE
+    default y if CONFIG_SSL_FULL_MODE
+    depends on !CONFIG_SSL_SKELETON_MODE
+config CONFIG_SSL_EXPIRY_TIME
+    int "Session expiry time (in hours)"
+    depends on !CONFIG_SSL_SKELETON_MODE
+    default 24 
+config CONFIG_X509_MAX_CA_CERTS
+    int "Maximum number of certificate authorites"
+    default 150
+    depends on !CONFIG_SSL_SERVER_ONLY && !CONFIG_SSL_SKELETON_MODE
+config CONFIG_SSL_MAX_CERTS
+    int "Maximum number of chained certificates"
+    default 3
+config CONFIG_SSL_CTX_MUTEXING
+    bool "Enable SSL_CTX mutexing"
+    default n
+config CONFIG_USE_DEV_URANDOM
+    bool "Use /dev/urandom"
+    default y
+    depends on !CONFIG_PLATFORM_WIN32
+config CONFIG_WIN32_USE_CRYPTO_LIB
+    bool "Use Win32 Crypto Library"
+    depends on CONFIG_PLATFORM_WIN32
+config CONFIG_OPENSSL_COMPATIBLE
+    bool "Enable openssl API compatibility"
+    default n
+config CONFIG_PERFORMANCE_TESTING
+    bool "Build the bigint performance test tool"
+    default n
+    depends on CONFIG_SSL_CERT_VERIFICATION
+config CONFIG_SSL_TEST
+    bool "Build the SSL testing tool"
+    default n
+    depends on CONFIG_SSL_FULL_MODE && !CONFIG_SSL_GENERATE_X509_CERT 
+endmenu
+config CONFIG_AXTLSWRAP
+    depends on !CONFIG_PLATFORM_WIN32
+    bool "Enable axtlswrap"
+    default n
+config CONFIG_AXHTTPD
+    bool "Enable HTTP/HTTPS Web Server"
+    default y
+menu "Axhttpd Configuration"
+depends on CONFIG_AXHTTPD
+config CONFIG_HTTP_STATIC_BUILD
+    bool "Static Build"
+    default n
+config CONFIG_HTTP_PORT
+    int "HTTP port"
+    default 80
+config CONFIG_HTTP_HTTPS_PORT
+    int "HTTPS port"
+    default 443
+config CONFIG_HTTP_SESSION_CACHE_SIZE
+    int "SSL session cache size"
+    default 5
+config CONFIG_HTTP_WEBROOT
+    string "Web root location"
+    default "../www" if !CONFIG_PLATFORM_WIN32
+    default "..\\www" if CONFIG_PLATFORM_WIN32
+config CONFIG_HTTP_TIMEOUT
+    int "Timeout"
+    default 300
+menu "CGI"
+depends on !CONFIG_PLATFORM_WIN32
+config CONFIG_HTTP_HAS_CGI
+    bool "Enable CGI"
+    default y
+    depends on !CONFIG_PLATFORM_WIN32
+config CONFIG_HTTP_CGI_EXTENSIONS
+    string "CGI File Extension(s)"
+    default ".lua,.lp,.php"
+    depends on CONFIG_HTTP_HAS_CGI
+config CONFIG_HTTP_ENABLE_LUA
+    bool "Enable Lua"
+    default y
+    depends on CONFIG_HTTP_HAS_CGI
+config CONFIG_HTTP_LUA_PREFIX
+    string "Lua's Installation Prefix"
+    default "/usr"
+    depends on CONFIG_HTTP_ENABLE_LUA
+config CONFIG_HTTP_BUILD_LUA
+    bool "Build Lua"
+    default n
+    depends on CONFIG_HTTP_ENABLE_LUA
+config CONFIG_HTTP_CGI_LAUNCHER
+    string "CGI launcher location"
+    default "/usr/bin/cgi"
+    depends on CONFIG_HTTP_HAS_CGI
+endmenu
+config CONFIG_HTTP_DIRECTORIES
+    bool "Enable Directory Listing"
+    default y
+config CONFIG_HTTP_HAS_AUTHORIZATION
+    bool "Enable authorization"
+    default y
+config CONFIG_HTTP_HAS_IPV6
+    bool "Enable IPv6"
+    default n
+    depends on !CONFIG_PLATFORM_WIN32
+config CONFIG_HTTP_ENABLE_DIFFERENT_USER
+    bool "Enable different user"
+    default n
+    depends on !CONFIG_PLATFORM_WIN32
+config CONFIG_HTTP_USER
+    string "As User"
+    default "nobody"
+    depends on CONFIG_HTTP_ENABLE_DIFFERENT_USER
+config CONFIG_HTTP_VERBOSE
+    bool "Verbose Mode"
+    default y if CONFIG_SSL_FULL_MODE
+    default n if !CONFIG_SSL_FULL_MODE
+config CONFIG_HTTP_IS_DAEMON
+    bool "Run as a daemon"
+    default n
+    depends on !CONFIG_PLATFORM_WIN32
+endmenu
+menu "Language Bindings"
+config CONFIG_BINDINGS
+    bool "Create language bindings"
+    default n
+config CONFIG_CSHARP_BINDINGS
+    bool "Create C# bindings"
+    default n
+    depends on CONFIG_BINDINGS
+config CONFIG_VBNET_BINDINGS
+    bool "Create VB.NET bindings"
+    default n
+    depends on CONFIG_BINDINGS
+menu ".Net Framework"
+depends on CONFIG_CSHARP_BINDINGS || CONFIG_VBNET_BINDINGS
+config CONFIG_DOT_NET_FRAMEWORK_BASE
+    string "Location of .NET Framework"
+    default "c:\\WINDOWS\\Microsoft.NET\\Framework\\v2.0.50727"
+endmenu
+config CONFIG_JAVA_BINDINGS
+    bool "Create Java bindings"
+    default n
+    depends on CONFIG_BINDINGS
+menu "Java Home"
+depends on CONFIG_JAVA_BINDINGS
+config CONFIG_JAVA_HOME
+    string "Location of JDK"
+    default "c:\\Program Files\\Java\\jdk1.5.0_06" if CONFIG_PLATFORM_WIN32 || CONFIG_PLATFORM_CYGWIN
+    default "/usr/local/jdk142" if !CONFIG_PLATFORM_WIN32 && !CONFIG_PLATFORM_CYGWIN
+    depends on CONFIG_JAVA_BINDINGS 
+endmenu
+config CONFIG_PERL_BINDINGS
+    bool "Create Perl bindings"
+    default n
+    depends on CONFIG_BINDINGS
+menu "Perl Home"
+depends on CONFIG_PERL_BINDINGS && CONFIG_PLATFORM_WIN32
+config CONFIG_PERL_CORE
+    string "Location of Perl CORE"
+    default "c:\\perl\\lib\\CORE"
+config CONFIG_PERL_LIB
+    string "Name of Perl Library"
+    default "perl58.lib"
+endmenu
+config CONFIG_LUA_BINDINGS
+    bool "Create Lua bindings"
+    default n
+    depends on CONFIG_BINDINGS && !CONFIG_PLATFORM_WIN32
+menu "Lua Home"
+depends on CONFIG_LUA_BINDINGS 
+config CONFIG_LUA_CORE
+    string "Location of Lua CORE"
+    default "/usr/local"
+endmenu
+endmenu
+menu "Samples"
+config CONFIG_SAMPLES
+    bool "Create Samples"
+    default y
+config CONFIG_C_SAMPLES
+    bool "axssl - C version"
+    default y
+    depends on CONFIG_SAMPLES
+config CONFIG_CSHARP_SAMPLES
+    bool "axssl - C# version"
+    default y
+    depends on CONFIG_SAMPLES && CONFIG_CSHARP_BINDINGS
+config CONFIG_VBNET_SAMPLES
+    bool "axssl - VB.NET version"
+    default y
+    depends on CONFIG_SAMPLES && CONFIG_VBNET_BINDINGS
+config CONFIG_JAVA_SAMPLES
+    bool "axssl - Java version"
+    default y
+    depends on CONFIG_SAMPLES && CONFIG_JAVA_BINDINGS
+config CONFIG_PERL_SAMPLES
+    bool "axssl - Perl version"
+    default y
+    depends on CONFIG_SAMPLES && CONFIG_PERL_BINDINGS
+config CONFIG_LUA_SAMPLES
+    bool "axssl - Lua version"
+    default y
+    depends on CONFIG_SAMPLES && CONFIG_LUA_BINDINGS
+endmenu
+menu "BigInt Options"
+    depends on !CONFIG_SSL_SKELETON_MODE
+choice
+    prompt "Reduction Algorithm"
+    default CONFIG_BIGINT_BARRETT
+config CONFIG_BIGINT_CLASSICAL
+    bool "Classical"
+config CONFIG_BIGINT_MONTGOMERY
+    bool "Montgomery"
+config CONFIG_BIGINT_BARRETT
+    bool "Barrett"
+endchoice
+config CONFIG_BIGINT_CRT
+    bool "Chinese Remainder Theorem (CRT)"
+    default y
+config CONFIG_BIGINT_KARATSUBA
+    bool "Karatsuba Multiplication"
+    default n
+config MUL_KARATSUBA_THRESH
+    int "Karatsuba Multiplication Theshold"
+    default 20
+    depends on CONFIG_BIGINT_KARATSUBA
+config SQU_KARATSUBA_THRESH
+    int "Karatsuba Square Threshold"
+    default 40
+    depends on CONFIG_BIGINT_KARATSUBA && CONFIG_BIGINT_SQUARE
+config CONFIG_BIGINT_SLIDING_WINDOW
+    bool "Sliding Window Exponentiation"
+    default y
+config CONFIG_BIGINT_SQUARE
+    bool "Square Algorithm"
+    default y
+config CONFIG_BIGINT_CHECK_ON
+    bool "BigInt Integrity Checking"
+    default n if !CONFIG_DEBUG
+    default y if CONFIG_DEBUG
+choice
+    prompt "Integer Size"
+    default CONFIG_INTEGER_32BIT
+config CONFIG_INTEGER_32BIT
+    bool "32"
+config CONFIG_INTEGER_16BIT
+    bool "16"
+config CONFIG_INTEGER_8BIT
+    bool "8"
+endchoice
+endmenu
