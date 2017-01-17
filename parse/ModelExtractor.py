@@ -323,23 +323,25 @@ class ActsModelExtractor(ModelExtractor):
             print c,
             fp.write(c)
         
-#         self.knownConstraint(fp)
+        self.knownConstraint(fp)
         fp.close()
         json.dump(self.valueDict,open('tmp/valueDict.txt','w'))
         json.dump(self.intChange,open('tmp/intChange.txt','w'))
     def knownConstraint(self,fp=None):
-        fp.write('VENDOR_EMULATION\n')
-        fp.write('PAYLOAD_NONE\n')
-        fp.write('BOARD_EMULATION_QEMU_X86_Q35\n')
-        fp.write('!BOOTSPLASH_IMAGE\n')
-        fp.write('!VGA_BIOS\n')
-        fp.write('!UPDATE_IMAGE\n')
-        print 'VENDOR_EMULATION'
-        print 'BOARD_EMULATION_QEMU_X86_Q35'
-        print 'PAYLOAD_NONE'
-        print '!BOOTSPLASH_IMAGE'
-        print '!VGA_BIOS'
-        print '!UPDATE_IMAGE'
+        fp.write('COMPILER_GCC')
+        print 'COMPILER_GCC'
+#         fp.write('VENDOR_EMULATION\n')
+#         fp.write('PAYLOAD_NONE\n')
+#         fp.write('BOARD_EMULATION_QEMU_X86_Q35\n')
+#         fp.write('!BOOTSPLASH_IMAGE\n')
+#         fp.write('!VGA_BIOS\n')
+#         fp.write('!UPDATE_IMAGE\n')
+#         print 'VENDOR_EMULATION'
+#         print 'BOARD_EMULATION_QEMU_X86_Q35'
+#         print 'PAYLOAD_NONE'
+#         print '!BOOTSPLASH_IMAGE'
+#         print '!VGA_BIOS'
+#         print '!UPDATE_IMAGE'
 #         print 'BOARD_EMULATION_QEMU_ARMV7'
 #         print 'CONFIG_PLATFORM_LINUX'
 #         print 'TARGET_x86_64'

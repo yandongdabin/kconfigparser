@@ -1,0 +1,61 @@
+#
+# Automatically generated file; DO NOT EDIT.
+# Libpayload Configuration
+#
+
+#
+# Generic Options
+#
+# CONFIG_GPL is not set
+CONFIG_EXPERIMENTAL=y
+CONFIG_DEVELOPER=y
+CONFIG_COMPILER_GCC=y
+CONFIG_MEMMAP_RAM_ONLY=y
+CONFIG_ARCH_X86=y
+# CONFIG_MULTIBOOT is not set
+CONFIG_HEAP_SIZE=131072
+CONFIG_STACK_SIZE=16384
+CONFIG_BASE_ADDRESS=0x00100000
+
+#
+# Standard Libraries
+#
+CONFIG_LIBC=y
+# CONFIG_CURSES is not set
+# CONFIG_CBFS is not set
+# CONFIG_LZMA is not set
+# CONFIG_LZ4 is not set
+
+#
+# Console Options
+#
+# CONFIG_SKIP_CONSOLE_INIT is not set
+CONFIG_CBMEM_CONSOLE=y
+# CONFIG_SERIAL_CONSOLE is not set
+# CONFIG_VIDEO_CONSOLE is not set
+CONFIG_PC_KEYBOARD=y
+# CONFIG_PC_KEYBOARD_LAYOUT_US is not set
+CONFIG_PC_KEYBOARD_LAYOUT_DE=y
+
+#
+# Drivers
+#
+# CONFIG_PCI is not set
+# CONFIG_NVRAM is not set
+CONFIG_RTC_PORT_EXTENDED_VIA=y
+# CONFIG_SPEAKER is not set
+# CONFIG_STORAGE is not set
+CONFIG_TIMER_RDTSC=y
+# CONFIG_USB is not set
+# CONFIG_USB_GEN_HUB is not set
+CONFIG_UDC=y
+CONFIG_UDC_CI=y
+# CONFIG_UDC_DWC2 is not set
+
+#
+# Debugging
+#
+# CONFIG_BIG_ENDIAN is not set
+CONFIG_LITTLE_ENDIAN=y
+CONFIG_IO_ADDRESS_SPACE=y
+CONFIG_ARCH_SPECIFIC_OPTIONS=y

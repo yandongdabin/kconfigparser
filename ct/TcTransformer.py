@@ -59,11 +59,12 @@ class TcTransformer(object):
             
     def translateValue(self,word,wordDict,changeType,usePrefix=True):
         output = wordDict[word]
+        configPrefix = 'CONFIG_LP_'
         if usePrefix:
-            prefix='CONFIG_'
+            prefix=configPrefix
         else:
             prefix=''
-        if(word.startswith('CONFIG_')):
+        if(word.startswith(configPrefix)):
             prefix=''
         if output == 'true' or output == "TRUE":
             output = prefix + word + '=' + 'y'
@@ -110,7 +111,7 @@ class TcTransformer(object):
     def translateTestCaseToConfig(self,testCases,changeType,configPath):     
         seq = 1
         haveConfig = True
-        
+        configPrefix = 'CONFIG_LP_'
         for testCase in testCases:
             wfp = open('../configs/'+str(seq)+'.txt','w')
             
@@ -123,9 +124,9 @@ class TcTransformer(object):
                     continue
                 else:
                     if haveConfig:
-                        ptn = '# CONFIG_([\w\W]+) is not set'
+                        ptn = '# '+configPrefix+'([\w\W]+) is not set'
                         
-                        ptn1 = 'CONFIG_([\w\W]+)=([\w\W]+)'
+                        ptn1 = configPrefix+'([\w\W]+)=([\w\W]+)'
                         m = re.match(ptn,line)
                         m1 = re.match(ptn1,line)
                     else:
@@ -142,14 +143,14 @@ class TcTransformer(object):
                         elif m1 is not None:
                             word = m1.group(1).strip()
                         #如果不在关注变量里面
-                        if word not in testCase and 'CONFIG_'+word not in testCase:
+                        if word not in testCase and configPrefix+word not in testCase:
 #                             wfp.write(line + '\n')
                             if m is not None:
                                 wfp.write(line + '\n')
                             else:           
                                 if m1.group(2).strip() == 'y':
                                     if haveConfig:
-                                        wfp.write('# CONFIG_' + word + ' is not set\n') 
+                                        wfp.write('# ' + configPrefix  + word + ' is not set\n') 
                                     else:
                                         wfp.write('# ' + word + ' is not set\n') 
                             
@@ -162,12 +163,12 @@ class TcTransformer(object):
                                 output+='\n'
                             wfp.write(output)
                             del testCase[word]
-                        elif 'CONFIG_'+word in testCase:
-                            output=self.translateValue('CONFIG_'+word, testCase,changeType)
+                        elif configPrefix+'_'+word in testCase:
+                            output=self.translateValue(configPrefix+word, testCase,changeType)
                             if output!='':
                                 output+='\n'
                             wfp.write(output)
-                            del testCase['CONFIG_'+word]
+                            del testCase[configPrefix+word]
                         
                     else:
                         wfp.write(line + '\n')

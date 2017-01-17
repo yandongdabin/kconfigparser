@@ -245,11 +245,11 @@ if __name__ == "__main__":
 #     modelEx.getModel()
 #     modelEx.getVModel(2, '../testObj/libpayload/cluster.csv')
 #     modelEx.getModel()
-    modelEx.getConfigFiles('../testObj/libpayload/libpayload_vs2.txt', '../testObj/libpayload/defconfig')
+#     modelEx.getConfigFiles('../testObj/libpayload/libpayload_str2.txt', '../testObj/libpayload/defconfig')
 #     modelEx.getConfigFiles('../busybox/busybox_str2_tc47.txt', '../busybox/defconfig')
 
 #     modelEx.clusterInfo('../testObj/axtls/cluster.csv')
-#     modelEx.getSimpleConfig('../testObj/coreboot/random-test','../testObj/coreboot/defconfig')
+    modelEx.getSimpleConfig('../testObj/libpayload/random-test','../testObj/libpayload/defconfig')
 #     modelEx.getConfigFiles('../testObj/axtls/axtls_vs2_ce.txt', '../testObj/axtls/defconfig')
 #     modelEx.getConfigFiles('../testObj/busybox/busybox_str2_ce.txt', '../testObj/busybox/defconfig')
 #     modelEx.getConfigFiles('../testObj/exam/exam_vs2.txt', '../testObj/exam/defconfig')
