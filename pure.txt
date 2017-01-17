@@ -1,0 +1,351 @@
+mainmenu "Libpayload Configuration"
+menu "Generic Options"
+config GPL
+	bool "GPLv2-licensed Options"
+	default n
+config EXPERIMENTAL
+	bool "Experimental Options"
+	default n
+config DEVELOPER
+	bool "Developer Options"
+	default n
+choice
+	prompt "Compiler to use"
+	default COMPILER_GCC
+config COMPILER_GCC
+	bool "GCC"
+config COMPILER_LLVM_CLANG
+	bool "LLVM/clang"
+endchoice
+config REMOTEGDB
+	bool "Remote GDB stub"
+	default n
+	depends on GPL
+config MEMMAP_RAM_ONLY
+	bool "Only consider RAM entries in memory map for further processing"
+	default n
+endmenu
+
+config ARCH_X86
+	bool
+	default y
+config ARCH_ARM
+    bool
+
+config ARCH_ARM64
+    bool
+config ARCH_MIPS
+	bool
+
+config MULTIBOOT
+	bool "Multiboot header support"
+	depends on ARCH_X86
+	default y
+config HEAP_SIZE
+	int "Heap size"
+	default 131072
+config STACK_SIZE
+	int "Stack size"
+	default 16384
+config BASE_ADDRESS
+	hex "Base address"
+	default 0x00100000 if ARCH_X86
+endmenu
+menu "Standard Libraries"
+config LIBC
+	bool "Enable C library support"
+	default y
+config CURSES
+	bool "Build a curses library"
+	default y
+choice
+	prompt "Curses implementation"
+	default PDCURSES
+	depends on CURSES
+config TINYCURSES
+	bool "TinyCurses"
+config PDCURSES
+	bool "PDCurses"
+endchoice
+config CBFS
+	bool "CBFS support"
+	default y
+config LZMA
+	bool "LZMA decoder"
+	default y
+config LZ4
+	bool "LZ4 decoder"
+	default y
+endmenu
+menu "Console Options"
+config SKIP_CONSOLE_INIT
+	bool "Skip initializing the consoles at startup"
+	default n
+config CBMEM_CONSOLE
+	bool "Send output to the in memory CBMEM console"
+	default y
+config SERIAL_CONSOLE
+	bool "See output on the serial port console"
+	default y
+config 8250_SERIAL_CONSOLE
+	bool "8250-compatible serial port driver (including IO and MMIO)"
+	depends on SERIAL_CONSOLE
+	default y
+config S5P_SERIAL_CONSOLE
+	bool "Exynos SOC, S5P compatible serial port driver"
+	depends on SERIAL_CONSOLE
+	default n
+config IPQ806X_SERIAL_CONSOLE
+	bool "IPQ806x SOC compatible serial port driver"
+	depends on SERIAL_CONSOLE
+	default n
+config BG4CD_SERIAL_CONSOLE
+	bool "Serial port driver for Marvell's BG4CD"
+	depends on SERIAL_CONSOLE
+	default n
+config PL011_SERIAL_CONSOLE
+	bool "PL011 compatible serial port driver"
+	depends on 8250_SERIAL_CONSOLE
+	default n
+config SERIAL_IOBASE
+	hex "Default I/O base for the serial port (default 0x3f8)"
+	depends on SERIAL_CONSOLE && ARCH_X86
+	default 0x3f8
+config SERIAL_SET_SPEED
+	bool "Override the serial console baud rate"
+	default n
+	depends on SERIAL_CONSOLE
+config SERIAL_BAUD_RATE
+	int "Serial console baud rate (default 115200)"
+	depends on SERIAL_SET_SPEED
+	default 115200
+config SERIAL_ACS_FALLBACK
+	bool "Use plain ASCII characters for ACS"
+	default n
+	depends on SERIAL_CONSOLE
+config VIDEO_CONSOLE
+	bool "See output on a video console"
+	default y
+config VGA_VIDEO_CONSOLE
+	bool "VGA video console driver"
+	depends on ARCH_X86 && VIDEO_CONSOLE
+	default y
+config GEODELX_VIDEO_CONSOLE
+	bool "Geode LX video console driver"
+	depends on ARCH_X86 && VIDEO_CONSOLE
+	default n
+config COREBOOT_VIDEO_CONSOLE
+	bool "coreboot video console driver"
+	depends on VIDEO_CONSOLE && !GEODELX_VIDEO_CONSOLE
+	default n
+config PC_KEYBOARD
+	bool "Allow input from a PC keyboard"
+	default y if ARCH_X86 # uses IO
+	default n
+config PC_KEYBOARD_LAYOUT_US
+	bool "English (US) keyboard layout"
+	depends on PC_KEYBOARD
+	default y
+config PC_KEYBOARD_LAYOUT_DE
+	bool "German keyboard layout"
+	depends on PC_KEYBOARD
+	default n
+endmenu
+menu "Drivers"
+config PCI
+	bool "Support for PCI devices"
+	depends on ARCH_X86 # for now
+	default y
+config NVRAM
+	bool "Support for reading/writing NVRAM bytes"
+	depends on ARCH_X86 # for now
+	default y
+config RTC_PORT_EXTENDED_VIA
+	bool "Extended RTC ports are 0x74/0x75"
+	default n
+config SPEAKER
+	bool "Support for PC speaker"
+	depends on ARCH_X86
+	default y
+config STORAGE
+	bool "Support for storage devices"
+	default y
+config STORAGE_64BIT_LBA
+	bool "Use 64-bit integers to address sectors"
+	depends on STORAGE
+	default n
+config STORAGE_ATA
+	bool "Support ATA drives (i.e. hard drives)"
+	depends on STORAGE
+	default y
+config STORAGE_ATAPI
+	bool "Support ATAPI drives (i.e. optical drives)"
+	depends on STORAGE
+	default y
+	select STORAGE_ATA
+config STORAGE_AHCI
+	bool "Support for AHCI host controllers"
+	depends on STORAGE && (STORAGE_ATA || STORAGE_ATAPI) && PCI
+	default y
+config STORAGE_AHCI_ONLY_TESTED
+	bool "Only enable tested controllers"
+	depends on STORAGE_AHCI
+	default y
+config TIMER_RDTSC
+	bool
+	default y
+	depends on ARCH_X86
+choice
+	prompt "Timer driver"
+	default TIMER_NONE
+	depends on !ARCH_X86
+config TIMER_NONE
+	bool "None"
+config TIMER_MCT
+	bool "Exynos MCT"
+config TIMER_TEGRA_1US
+	bool "Tegra 1us"
+config TIMER_IPQ806X
+	bool "Timer for ipq806x platforms"
+config TIMER_ARMADA38X
+        bool "Timer for armada38x platforms"
+config TIMER_RK
+	bool "Timer for Rockchip"
+config TIMER_BG4CD
+	bool "Marvell BG4CD"
+config TIMER_CYGNUS
+	bool "Timer for Cygnus"
+config TIMER_IMG_PISTACHIO
+	bool "Timer for IMG Pistachio"
+config TIMER_MTK
+	bool "Timer for MediaTek MT8173"
+endchoice
+config TIMER_MCT_HZ
+	int "Exynos MCT frequency"
+	depends on TIMER_MCT
+	default 24000000
+config TIMER_MCT_ADDRESS
+	hex "Exynos MCT base address"
+	depends on TIMER_MCT
+	default 0x101c0000
+config TIMER_RK_ADDRESS
+	hex "Rockchip timer base address"
+	depends on TIMER_RK
+	default 0xff810020
+config TIMER_TEGRA_1US_ADDRESS
+	hex "Tegra u1s timer base address"
+	depends on TIMER_TEGRA_1US
+	default 0x60005010
+config IPQ806X_TIMER_FREQ
+	int "Hardware timer frequency"
+	default 32000
+	depends on TIMER_IPQ806X
+config IPQ806X_TIMER_REG
+	hex "Timer register address"
+	default 0x0200A008
+	depends on TIMER_IPQ806X
+config ARMADA38X_TIMER_FREQ
+        int "Hardware timer frequency"
+        depends on TIMER_ARMADA38X
+        default 25000000
+config ARMADA38X_TIMER_REG
+        hex "Timer register address"
+        default 0xF1020314
+        depends on TIMER_ARMADA38X
+config IPROC_PERIPH_GLB_TIM_REG_BASE
+	hex "Cygnus timer base address"
+	depends on TIMER_CYGNUS
+	default 0x19020200
+config TIMER_MTK_HZ
+	int "MediaTek GPT frequency"
+	depends on TIMER_MTK
+	default 13000000
+config TIMER_MTK_ADDRESS
+	hex "MTK GPT register address"
+	depends on TIMER_MTK
+	default 0x10008048
+config USB
+	bool "USB Support"
+	default y
+config USB_UHCI
+	bool "Support for USB UHCI controllers"
+	depends on USB && ARCH_X86
+	default y
+config USB_OHCI
+	bool "Support for USB OHCI controllers"
+	depends on USB
+	default y
+config USB_EHCI
+	bool "Support for USB EHCI controllers"
+	depends on USB
+	default y
+config USB_XHCI
+	bool "Support for USB xHCI controllers"
+	depends on USB
+	default y
+config USB_XHCI_MTK_QUIRK
+	bool "Support for USB xHCI controllers on MTK SoC"
+	depends on USB_XHCI
+config USB_DWC2
+	bool "Support for USB DesignWare HCD controllers"
+	depends on USB
+config USB_HID
+	bool "Support for USB keyboards"
+	depends on USB
+	default y
+config USB_HUB
+	bool "Support for USB hubs"
+	depends on USB
+	default y
+config USB_EHCI_HOSTPC_ROOT_HUB_TT
+	bool "Support for USB EHCI ROOT HUB that has TT"
+	depends on USB_EHCI
+	default n
+config USB_MSC
+	bool "Support for USB storage"
+	depends on USB
+	default y
+config USB_GEN_HUB
+	bool
+	default n if (!USB_HUB && !USB_XHCI)
+	default y if (USB_HUB || USB_XHCI)
+config USB_PCI
+	bool "Auto-scan PCI bus for USB host controllers"
+	depends on USB
+	default y if ARCH_X86
+	default n
+config UDC
+	bool "USB device mode support"
+	default n
+config UDC_CI
+	bool "ChipIdea driver for USB device mode"
+	depends on UDC
+	default n
+config UDC_DWC2
+	bool "Designware driver for USB device mode"
+	depends on UDC
+	default n
+endmenu
+menu "Debugging"
+	depends on DEVELOPER
+config DEBUG_MALLOC
+	bool "Debug memory allocator"
+	depends on USB
+	default n
+endmenu
+config BIG_ENDIAN
+	default n
+	bool
+config LITTLE_ENDIAN
+	default n
+	bool
+config IO_ADDRESS_SPACE
+	default n
+	bool
+
+
+config ARCH_SPECIFIC_OPTIONS # dummy
+	def_bool y
+	select LITTLE_ENDIAN
+	select IO_ADDRESS_SPACE
+

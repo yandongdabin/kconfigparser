@@ -12,7 +12,7 @@ from entity.Types import *
 from Utils import Utils
 import re,json,csv
 from ct.TcTransformer import TcTransformer
-import numpy as np
+# import numpy as np
 
 class ModelExtractor(object):
     def __init__(self,filePath):

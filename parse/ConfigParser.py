@@ -232,8 +232,8 @@ if __name__ == "__main__":
 #     filePath = 'extra/Configs/Config.in'
 #     basePath = '/home/yandong/桌面/newTest/coreboot-4.4'
 #     filePath = 'src/Kconfig'
-    basePath = '/home/yandong/桌面/Experiment/coreboot-4.4'
-    filePath = 'src/Kconfig'
+    basePath = '/home/rest/Desktop/Experiment-yd-newtest/libpayload'
+    filePath = 'Kconfig'
     
 #     cp = ConfigParser()
 #     cp.getGraph('../testObj/exam/pure.txt')
@@ -241,7 +241,7 @@ if __name__ == "__main__":
 #     cp = ConfigParser()
 #     cp.preprocess(basePath, filePath)
 #     cp.deleteHelpModule('../total.txt')
-    modelEx = ActsModelExtractor('../testObj/coreboot/pure_0111.txt')
+    modelEx = ActsModelExtractor('../testObj/libpayload/pure.txt')
     modelEx.getModel()
 #     modelEx.getVModel(2, '../testObj/exam/cluster.csv')
 #     modelEx.getModel()
