@@ -236,16 +236,16 @@ if __name__ == "__main__":
     filePath = 'Kconfig'
     
 #     cp = ConfigParser()
-#     cp.getGraph('../testObj/exam/pure.txt')
+#     cp.getGraph('../testObj/libpayload/pure.txt')
 #     
 #     cp = ConfigParser()
 #     cp.preprocess(basePath, filePath)
 #     cp.deleteHelpModule('../total.txt')
     modelEx = ActsModelExtractor('../testObj/libpayload/pure.txt')
-    modelEx.getModel()
-#     modelEx.getVModel(2, '../testObj/exam/cluster.csv')
 #     modelEx.getModel()
-#     modelEx.getConfigFiles('../testObj/uclibc/uclibc_str2.txt', '../testObj/uclibc/defconfig')
+#     modelEx.getVModel(2, '../testObj/libpayload/cluster.csv')
+#     modelEx.getModel()
+    modelEx.getConfigFiles('../testObj/libpayload/libpayload_vs2.txt', '../testObj/libpayload/defconfig')
 #     modelEx.getConfigFiles('../busybox/busybox_str2_tc47.txt', '../busybox/defconfig')
 
 #     modelEx.clusterInfo('../testObj/axtls/cluster.csv')
