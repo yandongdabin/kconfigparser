@@ -293,10 +293,10 @@ class ActsModelExtractor(ModelExtractor):
         (retConditions,auxVar) = self.genConditionByRoot(root)
         for v in retVariables:
             fp.write(v + '\n')
-            print v
+#             print v
         for v in auxVar:
             fp.write('auxVar'+str(v) + '(boolean):TRUE,FALSE\n')
-            print 'auxVar'+str(v) + '(boolean):TRUE,FALSE'  
+#             print 'auxVar'+str(v) + '(boolean):TRUE,FALSE'  
         
         
         constrs = []
@@ -320,7 +320,7 @@ class ActsModelExtractor(ModelExtractor):
         print '[Constraint]'
         fp.write('[Constraint]\n')
         for c in constrs:
-            print c,
+#             print c,
             fp.write(c)
         
         self.knownConstraint(fp)

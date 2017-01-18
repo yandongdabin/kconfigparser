@@ -46,10 +46,12 @@ class ActsConstrExtractor(ConstrExtractor):
         return defaultCondition
     
     "depends on 依赖"
-    def getDependConditionImp(self,depend,known):
+    def getDependConditionImp(self,depend,known,condition_dict = None):
         if depend == '':
             return ''
         nType = self.node.dataType
+        if condition_dict is not None:
+            condition_dict['depend'] += 1
         #BOOL和TRISTATE我们认为是一样的
         if nType == ENUM_TYPE_BOOL  or nType== ENUM_TYPE_TRISTATE:
             if depend in known:
@@ -77,7 +79,7 @@ class ActsConstrExtractor(ConstrExtractor):
             return ""
     
     "select约束"    
-    def getSelectConditionImp(self):
+    def getSelectConditionImp(self,condition_dict = None):
         #添加select约束
         s = ''
         for select in self.node.select:
@@ -85,6 +87,8 @@ class ActsConstrExtractor(ConstrExtractor):
                 s += '!' + self.node.var + '||'+ select._name+'\n'
             else:
                 s += '!' + self.node.var +'|| !(' + self.parseCondition(select._condition)+') ||'+select._name+'\n'
+            if condition_dict is not None:
+                condition_dict['select'] += 1
         return s
 
     "int类型的range约束"
@@ -95,7 +99,7 @@ class ActsConstrExtractor(ConstrExtractor):
         return s
     
     '默认值约束'
-    def getDefaultCondition(self,depend_str,ns):
+    def getDefaultCondition(self,depend_str,ns,condition_dict = None):
         dType = self.node.dataType
         ret = ''
         for d in self.node.default:
@@ -140,6 +144,8 @@ class ActsConstrExtractor(ConstrExtractor):
                         ret += '!' + self.node.var + '\n'
                 else:
                     ret += self.node.var + '==' + dv  +'\n'
+            if condition_dict is not None:
+                condition_dict['default'] += 1
 #             if ns != '':
 #                 c1 = '(' + ns +  ('&&' if defaultCondition!='' else '')+ defaultCondition+('&&' if depend_str!='' else '')+ depend_str +') ->' + self.node.var + '==' + dv  +';\n' 
 #             else:
@@ -158,13 +164,13 @@ class ActsConstrExtractor(ConstrExtractor):
         
         
         #添加select约束
-        s += self.getSelectConditionImp()
+        s += self.getSelectConditionImp(condition_dict)
         
         #添加depends约束
         depend_s = ''
         allDepends = self.getAllDepends()
         for depend in allDepends:
-            depend_s += self.getDependConditionImp(depend,known)
+            depend_s += self.getDependConditionImp(depend,known,condition_dict)
             
         
         depend_str = '&&'.join(allDepends)
@@ -190,12 +196,12 @@ class ActsConstrExtractor(ConstrExtractor):
                     if ns == '' and d == '':
                         continue
                     #s += self.getDependConditionImp('(' + ns + ('' if d=='' else '&& ') + d + ')', known)
-                    s += self.getDependConditionImp('!' + '(' + ns + ('' if d=='' else '&& !') + d + ')', known)
+                    s += self.getDependConditionImp('!' + '(' + ns + ('' if d=='' else '&& !') + d + ')', known,condition_dict)
                 #此时要控制其所有的取值
                 
                 
                 if self.node.default is not None:
-                    s += self.getDefaultCondition(depend_str, ns)
+                    s += self.getDefaultCondition(depend_str, ns,condition_dict)
 
             #不可以被select的话
             else:
@@ -203,12 +209,12 @@ class ActsConstrExtractor(ConstrExtractor):
                 dType =  self.node.dataType
                 #depend生效是无条件的
                 for d in allDepends:
-                    s += self.getDependConditionImp(d, known)
+                    s += self.getDependConditionImp(d, known,condition_dict)
                 #控制其所有的取值
                 if len(self.node.default) <= 0:
                     s += self.node.var + '==' + str(self.getInvalidValue(dType))+'\n'
                 else:   
-                    s += self.getDefaultCondition(depend_str, '')
+                    s += self.getDefaultCondition(depend_str, '',condition_dict)
             return s     
         
        
