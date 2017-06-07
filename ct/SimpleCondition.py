@@ -59,6 +59,82 @@ class SimpleCondition(object):
         else:
             newArc.nextArc = nodeList[nodevar].firstArc
             nodeList[nodevar].firstArc = newArc
+    def addCnt(self, ret_graph, key1, key2):
+        if key1 not in ret_graph:
+            ret_graph[key1] = {}
+        if key2 not in ret_graph:
+            ret_graph[key2] = {}    
+        if key2 not in ret_graph[key1]:
+            ret_graph[key1][key2] = 0
+        if key1 not in ret_graph[key2]:
+            ret_graph[key2][key1] = 0
+        ret_graph[key1][key2] += 1
+        ret_graph[key2][key1] += 1
+        
+    def getSimilarity(self, root):
+        queue = Queue()
+        for child in root.children:
+            queue.put(child)
+        ret_graph = {}
+        while not queue.empty():
+            node = queue.get()
+            for child in node.children:
+                queue.put(child)
+                
+            if node.nodeType == ENUM_MENU:
+                continue
+            if node.nodeType == ENUM_CHOICE:
+                nodevar = []
+                for child in node.children:
+                    nodevar.append(child.var)
+                        
+                for var in nodevar:
+                    for var1 in nodevar:
+                        if var != var1:
+                            self.addCnt(ret_graph, var, var1)
+                
+                            
+            if node.nodeType == ENUM_CONFIG or node.nodeType == ENUM_MENUCONFIG:
+                pType =  node.parent.nodeType
+                if pType == ENUM_MENU or pType == ENUM_CHOICE:
+                    for depend in node.parent.depends:
+                        variables = self.getVarFromCondition(depend)
+                         
+                        for var in variables:
+                            self.addCnt(ret_graph, var, node.var)
+                elif pType == ENUM_MENUCONFIG:
+#                     print node.parent.var
+#                     print node.var
+                    self.addCnt(ret_graph, node.parent.var)
+                 
+            if node.nodeType == ENUM_CONFIG or node.nodeType == ENUM_MENUCONFIG:
+                for depend in node.depends:
+                    variables = self.getVarFromCondition(depend)
+                    for var in variables:
+                        self.addCnt(ret_graph, var, node.var)
+                for default in node.default:
+                    if default._condition is not None:
+                        variables = self.getVarFromCondition(default._condition)
+                        for var in variables:
+                            self.addCnt(ret_graph, var, node.var)
+            #处理select依赖 select->node && condition
+            for s in node.select:
+                variables = self.getVarFromCondition(s._condition)
+                variables.append(node.var)
+                for var in variables:
+                    self.addCnt(ret_graph, var, node.var)
+        keys = ret_graph.keys()
+        ret = []
+        for key in keys:
+            cur = []
+            for in_key in keys:
+                if in_key == key:
+                    cur.append(1)
+                else:
+                    cur.append(ret_graph[key][in_key])
+            ret.append(cur)
+        return (keys, ret)    
+    
     #用邻接表数据结构构建依赖图
     def buildGraph(self,root):
         currentId = [0,]
@@ -129,16 +205,7 @@ class SimpleCondition(object):
                 for var in variables:
                     self.addEdge(nodeList, var, s._name,currentId,nodeId,edgeId,debug1)
                     self.addEdge(nodeList, s._name, var,currentId,nodeId,edgeId,debug1)
-            #处理default依赖  node->default_condition
-#             dType = str(node.dataType)
-#             if dType == 'INT' or dType =='STRING':
-#                 for d in node.default:
-#                     variables = self.getVarFromCondition(d._condition)
-#                     for var in variables:
-#                         self.addEdge(nodeList, var, node.var,currentId,nodeId,edgeId,debug1)
-#                         self.addEdge(nodeList, node.var, var,currentId,nodeId,edgeId,debug1)
-#         print len(debug1)
-#         print len(debug2)
+
         for d in debug1:
             if d not in debug2:
                 print d
@@ -194,9 +261,6 @@ class SimpleCondition(object):
 
 
 if __name__ == "__main__":
-#     sc = SimpleCondition()
-#     s = '!ARCH_USE_MMU && (TARGET_bfin || TARGET_frv)'
-#     print sc.getVarFromCondition(s)
     ptn = '(([\w\d\s\.-_]+)=([\s\w\d\.-_]+))'
     s = 'a = 1 ||D|| b = 1 && C'
     sc = SimpleCondition()
